@@ -1,0 +1,4 @@
+#parse("/view/layout.vm")
+#@mainLayout()
+    <h1>$msg.get("ERROR_404_NOT_FOUND")</h1>
+#end

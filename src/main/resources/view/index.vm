@@ -1,0 +1,4 @@
+#parse("/view/layout.vm")
+#@mainLayout()
+    <h1>$msg.get("INDEX_HEADING")</h1>
+#end

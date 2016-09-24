@@ -1,4 +1,9 @@
 #parse("/view/layout.vm")
 #@mainLayout()
     <h1>$msg.get("INDEX_HEADING")</h1>
+    <ul>
+        #foreach($tweet in $tweets )
+            <li>$tweet</li> </br>
+        #end
+    </ul>
 #end

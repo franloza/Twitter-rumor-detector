@@ -47,5 +47,10 @@
             <artifactId>lombok</artifactId>
             <version>1.16.6</version>
         </dependency>
+        <dependency>
+            <groupId>org.twitter4j</groupId>
+            <artifactId>twitter4j-core</artifactId>
+            <version>3.0.5</version>
+        </dependency>
     </dependencies>
 </project>

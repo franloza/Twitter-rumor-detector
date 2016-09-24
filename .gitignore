@@ -24,4 +24,4 @@ hs_err_pid*
 ###IntelliJ Files
 .idea/
 Twitter Rumor Detector.iml
-
+/src/main/resources/twitter4j.properties

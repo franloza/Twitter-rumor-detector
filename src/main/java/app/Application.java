@@ -1,5 +1,6 @@
 package app;
 
+import app.controller.AnnotationController;
 import app.controller.IndexController;
 import app.util.Filters;
 import app.util.Path;
@@ -17,6 +18,8 @@ public class Application {
         public static void main(String[] args) throws TwitterException {
 
             // Configure Spark
+            staticFiles.location("/public");
+            //staticFiles.expireTime(600L);
             port(4567);
             enableDebugScreen();
 
@@ -25,7 +28,8 @@ public class Application {
             before("*",                  Filters.handleLocaleChange);
 
             // Set up routes
-            get(Path.Web.INDEX,          IndexController.serveIndexPage);
+            get(Path.Web.INDEX,          IndexController.servePage);
+            get(Path.Web.ANNOTATION,     AnnotationController.servePage);
             get("*",                     ViewUtil.notFound);
         }
 }

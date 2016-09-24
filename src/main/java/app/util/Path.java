@@ -12,10 +12,12 @@ public class Path {
     // the variables from Velocity Templates
     public static class Web {
         @Getter public static final String INDEX = "/";
+        @Getter public static final String ANNOTATION = "/annotation/";
     }
 
     public static class Template {
         public final static String INDEX = "/view/index.vm";
+        public final static String ANNOTATION = "view/annotation.vm";
         public static final String NOT_FOUND = "/view/notFound.vm";
     }
 

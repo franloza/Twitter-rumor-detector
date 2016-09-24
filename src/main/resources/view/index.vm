@@ -1,9 +1,7 @@
 #parse("/view/layout.vm")
 #@mainLayout()
     <h1>$msg.get("INDEX_HEADING")</h1>
-    <ul>
-        #foreach($tweet in $tweets )
-            <li>$tweet</li> </br>
-        #end
-    </ul>
+    <div id="index-button-bar">
+        <p><a href="/annotation" > Annotation tool</a></p>
+    </div>
 #end

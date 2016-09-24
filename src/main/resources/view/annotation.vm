@@ -1,0 +1,16 @@
+#parse("/view/layout.vm")
+#@mainLayout()
+<h1>$msg.get("ANNOTATION_HEADING")</h1>
+<ul class="tweet-list">
+    #foreach($tweet in $tweets )
+        <li>
+            <blockquote class="twitter-tweet">$tweet</blockquote>
+            <input type="checkbox" name="topic" value="topic" > Related to 11s attacks
+            <input type="checkbox" name="assertion" value="assertion"> Assertion
+            <input type="checkbox" name="rumor" value="rumor" > Rumor
+        </li>
+    #end
+    <p>Number of retweets: </p>
+</ul>
+#end
+

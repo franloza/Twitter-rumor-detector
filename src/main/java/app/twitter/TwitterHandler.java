@@ -17,6 +17,9 @@ public class TwitterHandler {
         List<Status> tweets = null;
         try {
             Query query = new Query("#11s");
+            query.setLocale("en");
+            query.resultType(Query.MIXED);
+            query.setCount(10);
             QueryResult result = twitter.search(query);
             tweets = result.getTweets();
         } catch (TwitterException e) {

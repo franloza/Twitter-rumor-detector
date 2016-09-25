@@ -9,17 +9,13 @@ import spark.Route;
 import twitter4j.Status;
 
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 public class AnnotationController {
     public static Route servePage = (Request request, Response response) -> {
         Map<String, Object> model = new HashMap<>();
-        List <String> tweets = new LinkedList<> ();
-        for (Status status :  TwitterHandler.getTweets()) {
-            tweets.add("<b> @" + status.getUser().getScreenName() + " </b>  - " + status.getText());
-        }
+        List <Status> tweets = TwitterHandler.getTweets();
         model.put ("tweets",tweets);
         return ViewUtil.render(request, model, Path.Template.ANNOTATION);
       };

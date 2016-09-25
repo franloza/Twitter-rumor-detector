@@ -4,13 +4,35 @@
 <ul class="tweet-list">
     #foreach($tweet in $tweets )
         <li>
-            <blockquote class="twitter-tweet">$tweet</blockquote>
-            <input type="checkbox" name="topic" value="topic" > Related to 11s attacks
-            <input type="checkbox" name="assertion" value="assertion"> Assertion
-            <input type="checkbox" name="rumor" value="rumor" > Rumor
-        </li>
+            <blockquote class="twitter-tweet">
+                <b> @$tweet.getUser().getScreenName() </b>  - $tweet.getText());
+            </blockquote>
+            <div class="switches">
+                <div class="switch-block">
+                    <label class="label-tag">Assertion</label>
+                    <label class="switch">
+                        <input type="checkbox" name="assertion">
+                        <div class="slider round"></div>
+                    </label>
+                </div>
+                <div class="switch-block">
+                    <label class="label-tag"> Related to 11s attacks </label>
+                    <label class="switch">
+                        <input type="checkbox" name="topic">
+                        <div class="slider round"></div>
+                    </label>
+                </div>
+                <div class="switch-block">
+                    <label class="label-tag">Rumor</label>
+                    <label class="switch">
+                        <input type="checkbox" name="rumor" >
+                        <div class="slider round"></div>
+                    </label>
+                </div>
+            </li>
+        <p>Number of retweets: </p>
     #end
-    <p>Number of retweets: </p>
 </ul>
+<script src="/annotation.js"></script>
 #end
 

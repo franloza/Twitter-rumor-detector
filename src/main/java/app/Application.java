@@ -30,6 +30,7 @@ public class Application {
             // Set up routes
             get(Path.Web.INDEX,          IndexController.servePage);
             get(Path.Web.ANNOTATION,     AnnotationController.servePage);
+            post(Path.Web.ANNOTATION,    AnnotationController.processRequest);
             get("*",                     ViewUtil.notFound);
         }
 }

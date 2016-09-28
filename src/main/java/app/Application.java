@@ -5,6 +5,7 @@ import app.controller.IndexController;
 import app.util.Filters;
 import app.util.Path;
 import app.util.ViewUtil;
+import com.mchange.v2.c3p0.ComboPooledDataSource;
 import twitter4j.TwitterException;
 
 import static spark.Spark.*;
@@ -15,13 +16,24 @@ import static spark.debug.DebugScreen.enableDebugScreen;
  * @author Fran Lozano
  */
 public class Application {
+
         public static void main(String[] args) throws TwitterException {
 
             // Configure Spark
             staticFiles.location("/public");
-            //staticFiles.expireTime(600L);
+            staticFiles.expireTime(600L);
             port(4567);
             enableDebugScreen();
+
+            //Configure connection to database
+            ComboPooledDataSource cpds = new ComboPooledDataSource();
+            cpds.setJdbcUrl("jdbc:mysql://localhost/trd");
+            cpds.setUser("admin");
+            cpds.setPassword("password");
+            cpds.setAcquireRetryAttempts(1);
+            cpds.setAcquireRetryDelay(1);
+            cpds.setBreakAfterAcquireFailure(true);
+            AnnotationController.setDataSource(cpds);
 
             // Set up before-filters (called before each get/post)
             before("*",                  Filters.addTrailingSlashes);
@@ -32,6 +44,8 @@ public class Application {
             get(Path.Web.ANNOTATION,     AnnotationController.servePage);
             post(Path.Web.ANNOTATION,    AnnotationController.processRequest);
             get("*",                     ViewUtil.notFound);
+
+
         }
 }
 

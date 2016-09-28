@@ -24,6 +24,16 @@ public class AnnotationController {
         Map<String, Object> model = new HashMap<>();
         List <Status> tweets = TwitterHandler.getTweets();
         model.put ("tweets",tweets);
+
+        for (int i = 1; i <= 10; i++) {
+            if (request.queryParams("rumor_" + i).equals("on")) {
+                String user = tweets.get(i).getUser().getScreenName();
+                Integer val = TwitterHandler.getUsers().getOrDefault(user, 0);
+                TwitterHandler.getUsers().put(user, val);
+            }
+        }
+
+
         //Testing request
         for (int i = 1; i <= 10; i++) {
             System.out.println(

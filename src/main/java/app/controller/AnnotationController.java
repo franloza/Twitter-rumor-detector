@@ -25,11 +25,12 @@ public class AnnotationController {
         List <Status> tweets = TwitterHandler.getTweets();
         model.put ("tweets",tweets);
 
-        for (int i = 1; i <= 10; i++) {
-            if (request.queryParams("rumor_" + i).equals("on")) {
+        for (int i = 0; i < 10; i++) {
+            if (request.queryParams("rumor_" + (i+1)) != null) {
                 String user = tweets.get(i).getUser().getScreenName();
                 Integer val = TwitterHandler.getUsers().getOrDefault(user, 0);
-                TwitterHandler.getUsers().put(user, val);
+                TwitterHandler.getUsers().put(user, val+1);
+                // TODO: Make POST params go from 0..9?
             }
         }
 
@@ -37,6 +38,7 @@ public class AnnotationController {
         //Testing request
         for (int i = 1; i <= 10; i++) {
             System.out.println(
+                    tweets.get(i-1).getUser().getScreenName() + " - " +
                     request.queryParams("assertion_" + i) + " - " +
                     request.queryParams("topic_" + i) + " - " +
                     request.queryParams("rumor_" + i)

@@ -30,14 +30,14 @@ public class TwitterHandler {
         List<Status> tweets = new LinkedList<>();
 
         try {
-            Query query = new Query("#11s");
+            Query query = new Query("\"9/11\" lang:en");
             query.setLocale("en");
-            //query.setLang("en");  // nullpointerexception if uncommented ??
+            //query.setLang("en");
             query.resultType(Query.MIXED);
             query.setCount(minTweets);
 
             // TODO: Twitter async (http://twitter4j.org/en/code-examples.html#asyncAPI)
-
+            // TODO: Skip repeated results
 
             //Filtering
             do {
@@ -47,11 +47,6 @@ public class TwitterHandler {
                         tweets.add(tweet);
                     }
                 }
-
-//                List<Status> resultSet = result.getTweets();
-//                resultSet.stream() //parallelStream
-//                        .filter(t -> t.getRetweetCount() >= minRetweet)
-//                        .forEach(t -> tweets.add(t)); // not thread-safe
 
                 query = result.nextQuery();
             } while (tweets.size() < minTweets);

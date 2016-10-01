@@ -45,22 +45,16 @@ public class AnnotationController {
             labels.add(request.queryParams("rumor_"+i));
             th.classifyTweet(Long.parseLong(request.queryParams("id_"+i)),labels);
 
+            //Store hashtags classified as rumors
             if (request.queryParams("rumor_" + (i)) != null) {
-                String user = tweets.get(i - 1).getUser().getScreenName();
-                Integer val = TwitterHandler.getUsers().getOrDefault(user, 0);
-                TwitterHandler.getUsers().put(user, val + 1);
-                // TODO: Add to database on a users table or keep in memory?
-
                 // Identify hashtags
                 Matcher matcher = pattern.matcher(tweets.get(i - 1).getText());
                 while (matcher.find()) {
                     System.out.println(matcher.group());
                     String hashtag = matcher.group();
-                    val = TwitterHandler.getHashtags().getOrDefault(hashtag, 0);
-                    TwitterHandler.getHashtags().put(hashtag, val+1);
+                    //Save hashtags in database
+                    th.saveHashtag(hashtag);
                 }
-                // TODO: Add to database on a hashtags table or keep in memory?
-
                 // TODO: Make POST params go from 0..9 ?
             }
         }

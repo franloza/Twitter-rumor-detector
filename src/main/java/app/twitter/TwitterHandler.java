@@ -15,24 +15,12 @@ public class TwitterHandler {
     private static int minRetweet = 0;
     private static int tweetsPerPage = 10;
     private TweetDAO tDao;
-
-    // Dictionary ("user" : rumor_tweets) that stores the amount of tweets classified
-    // as rumors for each specific user
-    private static Map<String, Integer> users = new HashMap<>();
-    public static Map<String, Integer> getUsers() {
-        return users;
-    }
-
-    // Dictionary ("hashtag" : appearences) that stores the amount of times a hashtag has appeared
-    private static Map<String, Integer> hashtags = new HashMap<>();
-    public static Map<String, Integer> getHashtags() {
-        return hashtags;
-    }
+    private QueryBuilder qb;
 
     public TwitterHandler(DataSource ds) {
         this.tDao = new TweetDAO(ds);
+        this.qb = new QueryBuilder(tDao);
     }
-
 
     public List<Status> getTweets() {
 
@@ -40,20 +28,9 @@ public class TwitterHandler {
           The factory instance is re-useable and thread safe.*/
         Twitter twitter = new TwitterFactory().getInstance();
         List<Status> tweets = new LinkedList<>();
-        List<Status> newTweets = new LinkedList<>();
         try {
-            //TODO: Define keyword list
-            //Temporary keyword stack
-            Stack<String> keywords = new Stack<>();
-            keywords.add("\"9/11\" lang:en");
-            keywords.add("#11s lang:en");
-            keywords.add("#TwinTowers lang:en");
-            keywords.add("#11sAttacks lang:en");
-            keywords.add("#11-s lang:en");
-
-            Query query = new Query(keywords.pop());
-            query.setLocale("en");
-            //query.setLang("en");
+            Query query = qb.getQuery();
+            query.setLang("en");
             query.resultType(Query.MIXED);
             query.setCount(tweetsPerPage);
 
@@ -62,7 +39,7 @@ public class TwitterHandler {
             //Filtering
             do {
                 if(query == null) {
-                    query = new Query(keywords.pop());
+                    query = qb.getQuery();
                 }
                 QueryResult result = twitter.search(query);
                 if (result.getCount() > 0) {
@@ -71,18 +48,8 @@ public class TwitterHandler {
                         //Minimum number of retweets
                         if (tweet.getRetweetCount() >= minRetweet) {
                             //Check if the tweet is already and the database
-                            if (tDao.checkID(tweet.getId())) {
-                                //Add it if it's in the database but has not been classified
-                                //if (!tDao.checkClassified(tweet.getId())) {
-                                    ;//tweets.add(tweet);
-                                    // They're classified after this method returns.
-                                    // Uncommenting the statement results in the same tweets
-                                    // repeated every two pages.
-                                //}
-                            }
-                            else{
+                            if (!tDao.checkID(tweet.getId())) {
                                 tweets.add(tweet);
-                                newTweets.add(tweet);
                             }
                         }
                         //Return the tweets in the maximum number of tweets has been reached
@@ -96,7 +63,7 @@ public class TwitterHandler {
             e.printStackTrace();
         }
         //Save new tweets to the database
-        saveTweets(newTweets);
+        saveTweets(tweets);
         return tweets;
     }
 
@@ -106,7 +73,13 @@ public class TwitterHandler {
         }
     }
 
+    public boolean saveHashtag(String hashtag) {
+        return tDao.saveHashtag(hashtag);
+    }
+
     public boolean classifyTweet (long id, List<String> labels) {
         return tDao.classifyTweet(id,labels);
     }
+
+
 }

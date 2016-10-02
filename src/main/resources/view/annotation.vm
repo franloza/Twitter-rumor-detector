@@ -1,6 +1,7 @@
 #parse("/view/layout.vm")
 #@mainLayout()
 <h1>$msg.get("ANNOTATION_HEADING")</h1>
+<h2>$msg.get("ANNOTATION_QUERY"): $query</h2>
     <form action="" method="post">
         <ul class="tweet-list">
             #foreach($tweet in $tweets )

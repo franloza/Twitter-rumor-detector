@@ -5,7 +5,6 @@ import app.controller.IndexController;
 import app.util.Filters;
 import app.util.Path;
 import app.util.ViewUtil;
-import com.mchange.v2.c3p0.ComboPooledDataSource;
 import twitter4j.TwitterException;
 
 import static spark.Spark.*;
@@ -24,16 +23,7 @@ public class Application {
             staticFiles.expireTime(600L);
             port(4567);
             enableDebugScreen();
-
-            //Configure connection to database
-            ComboPooledDataSource cpds = new ComboPooledDataSource();
-            cpds.setJdbcUrl("jdbc:mysql://localhost/trd");
-            cpds.setUser("admin");
-            cpds.setPassword("password");
-            cpds.setAcquireRetryAttempts(1);
-            cpds.setAcquireRetryDelay(1);
-            cpds.setBreakAfterAcquireFailure(true);
-            AnnotationController.setDataSource(cpds);
+            AnnotationController.start();
 
             // Set up before-filters (called before each get/post)
             before("*",                  Filters.addTrailingSlashes);

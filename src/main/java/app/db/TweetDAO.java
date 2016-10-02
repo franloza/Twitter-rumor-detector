@@ -137,15 +137,15 @@ public class TweetDAO {
      * @return false if an error ocurred
      */
     public boolean saveHashtag(String hashtag) {
-        String sql = "SELECT COUNT(hashtag) FROM hashtags WHERE hashtag=?";
+        String sql = "SELECT COUNT(hashtag) FROM keywords WHERE hashtag=?";
         try(Connection con = ds.getConnection();
             PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setString(1,hashtag);
             ResultSet rs = pst.executeQuery();
             if (rs.next()) {
                 //The hashtag is already in the data base
-                if (rs.getInt(1) > 0 ) sql = "UPDATE hashtags SET count=count+1 WHERE hashtag=?";
-                else sql = "INSERT INTO hashtags VALUES(?,1)";
+                if (rs.getInt(1) > 0 ) sql = "UPDATE keywords SET count=count+1 WHERE hashtag=?";
+                else sql = "INSERT INTO keywords VALUES(?,1)";
                 PreparedStatement pst2 = con.prepareStatement(sql);
                 pst2.setString(1,hashtag);
                 if (pst2.executeUpdate() < 1) return false;
@@ -190,23 +190,23 @@ public class TweetDAO {
     }
 
     /**
-     * Function that returns a dictionary ("hashtag" : appearences) that stores the amount of times a hashtag
-     * has apppear in a tweet classified as rumor.
-     * @return Map of hashtags that appear in rumor tweets.
+     * Function that returns a dictionary ("keyword" : weight) that stores a keyword and a weight associated
+     * to it
+     * @return Map of keywords and weights
      */
-    public HashMap<String,Integer> getRumorHashtags () {
-        String sql = "SELECT hashtag,count FROM hashtags";
-        return getMap(sql);
-    }
-
-    /**
-     * Function that returns a list of hashtags that
-     * has appear in a tweet classified as rumor.
-     * @return Map of hashtags that appear in rumor tweets.
-     */
-    public List<String> getRumorHashtagsList () {
-        String sql = "SELECT hashtag FROM hashtags";
-        return getList(sql);
+    public HashMap<String,Double> getKeywords () {
+        String sql = "SELECT keyword,weight FROM keywords";
+        HashMap<String, Double> map = new HashMap<>();
+        try (Connection con = ds.getConnection();
+             PreparedStatement pst = con.prepareStatement(sql)) {
+            ResultSet rs = pst.executeQuery();
+            while (rs.next()) {
+                map.put(rs.getString(1), rs.getDouble(2));
+            }
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
+        return map;
     }
 
     /**

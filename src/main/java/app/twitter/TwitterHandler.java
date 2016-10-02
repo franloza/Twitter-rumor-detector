@@ -1,10 +1,11 @@
 package app.twitter;
 
+import app.db.DataManager;
 import app.db.TweetDAO;
 import twitter4j.*;
 
-import javax.sql.DataSource;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Class that handles all the interaction with the Twitter API
@@ -14,12 +15,12 @@ public class TwitterHandler {
 
     private static int minRetweet = 0;
     private static int tweetsPerPage = 10;
-    private TweetDAO tDao;
-    private QueryBuilder qb;
 
-    public TwitterHandler(DataSource ds) {
-        this.tDao = new TweetDAO(ds);
-        this.qb = new QueryBuilder(tDao);
+    private TweetDAO tDao;
+    private String currentQuery;
+
+    public TwitterHandler() {
+        this.tDao = DataManager.getInstance().getTweetDao();;
     }
 
     public List<Status> getTweets() {
@@ -29,7 +30,8 @@ public class TwitterHandler {
         Twitter twitter = new TwitterFactory().getInstance();
         List<Status> tweets = new LinkedList<>();
         try {
-            Query query = qb.getQuery();
+            Query query = QueryBuilder.getQuery();
+            this.currentQuery = query.getQuery();
             query.setLang("en");
             query.resultType(Query.MIXED);
             query.setCount(tweetsPerPage);
@@ -39,7 +41,8 @@ public class TwitterHandler {
             //Filtering
             do {
                 if(query == null) {
-                    query = qb.getQuery();
+                    query = QueryBuilder.getQuery();
+                    this.currentQuery = query.getQuery();
                 }
                 QueryResult result = twitter.search(query);
                 if (result.getCount() > 0) {
@@ -81,5 +84,7 @@ public class TwitterHandler {
         return tDao.classifyTweet(id,labels);
     }
 
-
+    public String getQuery() {
+        return this.currentQuery;
+    }
 }

@@ -8,7 +8,6 @@ import spark.Response;
 import spark.Route;
 import twitter4j.Status;
 
-import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -20,14 +19,16 @@ public class AnnotationController {
 
     private static TwitterHandler th;
 
-    public static void setDataSource (DataSource ds) {
-        th = new TwitterHandler(ds);
+    public static void start () {
+        th = new TwitterHandler();
     }
 
     public static Route servePage = (Request request, Response response) -> {
         Map<String, Object> model = new HashMap<>();
         List <Status> tweets = th.getTweets();
+        String query = th.getQuery();
         model.put ("tweets",tweets);
+        model.put ("query",query);
         return ViewUtil.render(request, model, Path.Template.ANNOTATION);
       };
 

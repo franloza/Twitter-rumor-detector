@@ -9,8 +9,9 @@ CREATE TABLE tweets
     text MEDIUMTEXT NOT NULL
 );
 CREATE INDEX users__index ON tweets (user);
-CREATE TABLE hashtags
+CREATE TABLE keywords
 (
-    hashtag VARCHAR(200) PRIMARY KEY NOT NULL,
-    count INT(11)
+    keyword VARCHAR(100) PRIMARY KEY NOT NULL,
+    weight FLOAT NOT NULL
 );
+

@@ -15,6 +15,8 @@ public class TwitterHandler {
 
     private static int minRetweet = 0;
     private static int tweetsPerPage = 10;
+    //Amount of keyword weight that is increased each tweet is classified as rumor
+    private static double deltaWeight = 0.1;
 
     private TweetDAO tDao;
     private String currentQuery;
@@ -50,8 +52,8 @@ public class TwitterHandler {
                         //TODO: It's pulling (classic) reweets? Try to find original.
                         //Minimum number of retweets
                         if (tweet.getRetweetCount() >= minRetweet) {
-                            //Check if the tweet is already and the database
-                            if (!tDao.checkID(tweet.getId())) {
+                            //Check if the tweet is duplicated
+                            if (!tDao.checkDuplicate(tweet.getId(),tweet.getText().hashCode())) {
                                 tweets.add(tweet);
                             }
                         }
@@ -76,15 +78,27 @@ public class TwitterHandler {
         }
     }
 
-    public boolean saveHashtag(String hashtag) {
-        return tDao.saveHashtag(hashtag);
+    private boolean updateWeight(String keyword,double deltaWeight) {
+        return tDao.updateWeight(keyword,deltaWeight);
     }
 
     public boolean classifyTweet (long id, List<String> labels) {
-        return tDao.classifyTweet(id,labels);
+        return tDao.setLabels(id,labels);
     }
 
     public String getQuery() {
         return this.currentQuery;
+    }
+
+    public void updateKeywordsWeight(long tweetId) {
+        List<String> keywords = tDao.getKeywordsList();
+        String tweet = tDao.getTweet(tweetId);
+        for (String s: keywords ) {
+            if(tweet.contains(s)) {
+                System.out.println("Updating weight of keyword {" + s + "}");
+                updateWeight(s,deltaWeight);
+                DataManager.getInstance().getKeywords().update(s,deltaWeight);
+            }
+        }
     }
 }

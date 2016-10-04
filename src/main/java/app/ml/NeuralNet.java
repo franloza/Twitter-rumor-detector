@@ -1,5 +1,6 @@
 package app.ml;
 
+import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.deeplearning4j.models.word2vec.wordstore.VocabCache;
@@ -12,6 +13,7 @@ import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.io.ClassPathResource;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
@@ -24,21 +26,23 @@ import java.util.regex.Pattern;
 //TODO: Update neural network with each classified tweet and save in in a file
 public class NeuralNet {
 
-    private static final boolean LOAD_MODEL = false;
     private Word2Vec model;
-
+    private final String modelPath = "src/main/resources/data/model.data";
     public NeuralNet() {
-        if(LOAD_MODEL) {
-            //TODO: Load the model from the database
+        File f = new File(modelPath);
+        if(f.exists() && !f.isDirectory()) {
+                this.load();
         }else{
             //Create a new model using some initial tweets
-            List<String> tweets = loadInitialTweets("/data/rumorTweets.txt");
+            List<String> tweets = this.loadInitialTweets("/data/rumorTweets.txt");
             this.model = trainModel(tweets);
+            //Save the model in a file
+            this.save();
         }
     }
 
     public Collection<String> getWordsNearest(String keyword, int n) {
-        Collection<String> words;
+        Collection<String> words = new LinkedList<>();
         Collection<String> keywordColl = Arrays.asList(keyword.split("\\s+"));
         if (keywordColl.size() > 1) {
             INDArray vectors = model.getWordVectors(keywordColl);
@@ -51,9 +55,6 @@ public class NeuralNet {
                     if (keyword.contains(w)) it.remove();
                 }
             }
-            else {
-                return keywordColl;
-            }
         } else {
             words = model.wordsNearest(keyword,n);
         }
@@ -64,7 +65,7 @@ public class NeuralNet {
         return model.getVocab();
     }
 
-    private static List<String> loadInitialTweets(String filePath) {
+    private List<String> loadInitialTweets(String filePath) {
         System.out.println("Loading & vectorizing initial tweets...");
         List<String> tokens = null;
         List<String> tweets = new LinkedList<>();
@@ -126,5 +127,19 @@ public class NeuralNet {
         System.out.println("Fitting Word2Vec model....");
         vec.fit();
         return vec;
+    }
+
+    public void save() {
+        System.out.println(("Saving model...."));
+        WordVectorSerializer.writeWord2Vec(model, modelPath);
+    }
+
+    private void load(){
+        System.out.println(("Loading model...."));
+        try {
+            this.model = WordVectorSerializer.readWord2Vec(new File(modelPath));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

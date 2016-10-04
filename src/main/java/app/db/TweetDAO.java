@@ -28,12 +28,17 @@ public class TweetDAO {
      * @return false if there was an error
      */
     public boolean insertTweet (Status s) {
-        String sql = "INSERT INTO tweets (id,user,text) VALUES (?,?,?)";
+        String sql = "INSERT INTO tweets (id,userId,userName,text,retweetCount,creationDate,favoriteCount,textHash) VALUES (?,?,?,?,?,?,?,?)";
         try(Connection con = ds.getConnection();
             PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setLong(1,s.getId());
-            pst.setString(2,s.getUser().getName());
-            pst.setString(3,s.getText());
+            pst.setLong(2,s.getUser().getId());
+            pst.setString(3,s.getUser().getName());
+            pst.setString(4,s.getText());
+            pst.setInt(5,s.getRetweetCount());
+            pst.setDate(6,new Date(s.getCreatedAt().getTime()));
+            pst.setInt(7,s.getFavoriteCount());
+            pst.setInt(8,s.getText().hashCode());
             pst.executeUpdate();
             return true;
         } catch (SQLException e) {
@@ -48,7 +53,7 @@ public class TweetDAO {
      * @param labels List of labels to set to 1 in the database
      * @return false if there was an error
      */
-    public boolean classifyTweet (long id, List<String> labels) {
+    public boolean setLabels(long id, List<String> labels) {
         String sql = "UPDATE tweets SET classified=1,assertion=?,topic=?,rumor=? WHERE id=?";
         try(Connection con = ds.getConnection();
             PreparedStatement pst = con.prepareStatement(sql)) {
@@ -110,6 +115,30 @@ public class TweetDAO {
     }
 
     /**
+     * Function that checks if an id exists in the database or the content belongs already to a tweet
+     * @param id
+     * @return true if it exists
+     */
+    public boolean checkDuplicate(long id,int textHash) {
+        String sql = "SELECT COUNT(id) FROM tweets WHERE id=? OR textHash=?";
+        try(Connection con = ds.getConnection();
+            PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setLong(1,id);
+            pst.setInt(2,textHash);
+            ResultSet rs = pst.executeQuery();
+            if (rs.next()) {
+                if (rs.getInt(1) == 0) return false;
+                else return true;
+            }
+            return false;
+
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            return false;
+        }
+    }
+
+    /**
      * Function that checks if an existing tweet is set as classified in the database
      * @param id
      * @return true if it has been classified
@@ -131,23 +160,19 @@ public class TweetDAO {
         }
     }
 
-    /**
-     * Function that save a hashtag in the database
-     * @param hashtag The hashtag to be saved
-     * @return false if an error ocurred
-     */
-    public boolean saveHashtag(String hashtag) {
-        String sql = "SELECT COUNT(hashtag) FROM keywords WHERE hashtag=?";
+    public boolean updateWeight(String keyword, double deltaWeight) {
+        String sql = "SELECT COUNT(keyword) FROM keywords WHERE keyword=?";
         try(Connection con = ds.getConnection();
             PreparedStatement pst = con.prepareStatement(sql)) {
-            pst.setString(1,hashtag);
+            pst.setString(1,keyword);
             ResultSet rs = pst.executeQuery();
             if (rs.next()) {
-                //The hashtag is already in the data base
-                if (rs.getInt(1) > 0 ) sql = "UPDATE keywords SET count=count+1 WHERE hashtag=?";
-                else sql = "INSERT INTO keywords VALUES(?,1)";
+                //The keyword is already in the data base
+                if (rs.getInt(1) > 0 ) sql = "UPDATE keywords SET weight=weight + ? WHERE keyword=?";
+                else sql = "INSERT INTO keywords VALUES(?,1 + deltaWeight)";
                 PreparedStatement pst2 = con.prepareStatement(sql);
-                pst2.setString(1,hashtag);
+                pst2.setDouble(1,deltaWeight);
+                pst2.setString(2,keyword);
                 if (pst2.executeUpdate() < 1) return false;
             }
             else return false;
@@ -164,7 +189,7 @@ public class TweetDAO {
      * @return Number of tweets labeled as rumors.
      */
     public int countRumorTweets (String user) {
-        String sql = "SELECT COUNT(id) FROM tweets WHERE rumor=1 and user=?";
+        String sql = "SELECT COUNT(id) FROM tweets WHERE rumor=1 and userName=?";
         try(Connection con = ds.getConnection();
         PreparedStatement pst = con.prepareStatement(sql)) {
         pst.setString(1,user);
@@ -243,5 +268,27 @@ public class TweetDAO {
             System.err.println(e.getMessage());
         }
         return list;
+    }
+
+    public List<String> getKeywordsList() {
+        String sql = "SELECT keyword from keywords";
+        return this.getList(sql);
+    }
+
+    public String getTweet(long tweetId) {
+        String sql = "SELECT text FROM tweets WHERE id=?";
+        try(Connection con = ds.getConnection();
+            PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setLong(1,tweetId);
+            ResultSet rs = pst.executeQuery();
+            if (rs.next()) {
+                return rs.getString(1);
+            }
+            return "";
+
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            return "";
+        }
     }
 }

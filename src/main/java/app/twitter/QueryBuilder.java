@@ -21,12 +21,14 @@ public class QueryBuilder {
         NeuralNet nn = DataManager.getInstance().getNeuralNet();
         Random rnd = new Random();
         StringBuilder sb = new StringBuilder();
-        String keyword = null;
+        String keyword;
         int queryTerms = (int) Math.abs(Math.round(rnd.nextGaussian()+1));
         keyword = DataManager.getInstance().getKeywords().next();
-        //keyword = cache.wordAtIndex(rnd.nextInt(cache.numWords()));
-        sb.append(keyword + " ");
-        if (queryTerms > 0) sb.append(String.join(" ", nn.getWordsNearest(keyword, queryTerms)));
+        sb.append(keyword);
+        sb.append(" ");
+        do {
+            sb.append(String.join(" ", nn.getWordsNearest(keyword, queryTerms)));
+        } while (sb.toString().length() < 1);
         System.out.println("Query: " + sb.toString());
         return new Query(sb.toString());
     }

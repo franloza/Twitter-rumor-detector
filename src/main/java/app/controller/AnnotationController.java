@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class AnnotationController {
@@ -27,8 +26,8 @@ public class AnnotationController {
         Map<String, Object> model = new HashMap<>();
         List <Status> tweets = th.getTweets();
         String query = th.getQuery();
-        model.put ("tweets",tweets);
-        model.put ("query",query);
+        if(tweets != null) model.put ("tweets",tweets);
+        if (query != null) model.put ("query",query);
         return ViewUtil.render(request, model, Path.Template.ANNOTATION);
       };
 
@@ -46,21 +45,15 @@ public class AnnotationController {
             labels.add(request.queryParams("rumor_"+i));
             th.classifyTweet(Long.parseLong(request.queryParams("id_"+i)),labels);
 
-            //Store hashtags classified as rumors
+            //Update the weights for the keyword(s)
             if (request.queryParams("rumor_" + (i)) != null) {
-                // Identify hashtags
-                Matcher matcher = pattern.matcher(tweets.get(i - 1).getText());
-                while (matcher.find()) {
-                    System.out.println(matcher.group());
-                    String hashtag = matcher.group();
-                    //Save hashtags in database
-                    th.saveHashtag(hashtag);
+                th.updateKeywordsWeight(Long.parseLong(request.queryParams("id_"+i)));
                 }
-                // TODO: Make POST params go from 0..9 ?
             }
-        }
         //Render new page
-        model.put ("tweets",tweets);
+        String query = th.getQuery();
+        if(tweets != null) model.put ("tweets",tweets);
+        if (query != null) model.put ("query",query);
         return ViewUtil.render(request, model, Path.Template.ANNOTATION);
     };
 }

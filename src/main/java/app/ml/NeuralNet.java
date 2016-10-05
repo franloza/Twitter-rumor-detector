@@ -23,7 +23,6 @@ import java.util.regex.Pattern;
  * Neural network of the annotation tool that helps to build the queries
  * @author Fran Lozano
  */
-//TODO: Update neural network with each classified tweet and save in in a file
 public class NeuralNet {
 
     private Word2Vec model;

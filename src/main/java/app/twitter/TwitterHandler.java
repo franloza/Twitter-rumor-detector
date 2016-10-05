@@ -4,15 +4,18 @@ import app.db.DataManager;
 import app.db.TweetDAO;
 import twitter4j.*;
 
+import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Class that handles all the interaction with the Twitter API
  * @author Fran Lozano
  */
 public class TwitterHandler {
-
+    //Maximum number of past years in which the search will be done
+    private static final int NUMBER_OF_YEARS =  6;
     private static int minRetweet = 0;
     private static int tweetsPerPage = 10;
     //Amount of keyword weight that is increased each tweet is classified as rumor
@@ -32,18 +35,12 @@ public class TwitterHandler {
         Twitter twitter = new TwitterFactory().getInstance();
         List<Status> tweets = new LinkedList<>();
         try {
-            Query query = QueryBuilder.getQuery();
-            this.currentQuery = query.getQuery();
-            query.setLang("en");
-            query.resultType(Query.MIXED);
-            query.setCount(tweetsPerPage);
-
+            Query query = null;
             // TODO: Twitter async (http://twitter4j.org/en/code-examples.html#asyncAPI)
-
             //Filtering
             do {
                 if(query == null) {
-                    query = QueryBuilder.getQuery();
+                    query = buildQuery();
                     this.currentQuery = query.getQuery();
                 }
                 QueryResult result = twitter.search(query);
@@ -70,6 +67,19 @@ public class TwitterHandler {
         //Save new tweets to the database
         saveTweets(tweets);
         return tweets;
+    }
+
+    private Query buildQuery() {
+        Query query = QueryBuilder.getQuery();
+        this.currentQuery = query.getQuery();
+        query.setLang("en");
+        query.resultType(Query.MIXED);
+        query.setCount(tweetsPerPage);
+        /*
+        String year = getRandomYear();
+        query.setSince(getSince(year));
+        query.setUntil(getUntil(year));*/
+        return query;
     }
 
     private void saveTweets(List<Status> tweets) {
@@ -100,5 +110,28 @@ public class TwitterHandler {
                 DataManager.getInstance().getKeywords().update(s,deltaWeight);
             }
         }
+    }
+
+    public int countClassified() {
+        return tDao.countClassified();
+    }
+
+    public int countRumor() {
+        return tDao.countRumor();
+    }
+
+    /*Not useful as Twitter API does not allow to retrieve tweets from more than 1 week"*/
+    private String getRandomYear () {
+        Random rnd = new Random();
+        int year = Calendar.getInstance().get(Calendar.YEAR) - rnd.nextInt(NUMBER_OF_YEARS) -1;
+        return String.valueOf(year);
+    }
+
+    private String getSince(String year) {
+        return year + "-01-01";
+    }
+
+    private String getUntil(String year) {
+        return year + "-12-31";
     }
 }

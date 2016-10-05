@@ -138,6 +138,13 @@ input:checked + .slider:before {
     transform: translateX(26px);
 }
 
+/*Tweet style*/
+
+.creationDate {
+    color:lightgrey;
+    font-style:italic;
+}
+
 /* Rounded sliders */
 .slider.round {
     border-radius: 34px;
@@ -162,3 +169,6 @@ input:checked + .slider:before {
     display:inline-block;
 }
 
+#datasetInfo {
+    padding:10px;
+}

@@ -26,8 +26,13 @@ public class AnnotationController {
         Map<String, Object> model = new HashMap<>();
         List <Status> tweets = th.getTweets();
         String query = th.getQuery();
+        int nClassified = th.countClassified();
+        int nRumor = th.countRumor();
         if(tweets != null) model.put ("tweets",tweets);
         if (query != null) model.put ("query",query);
+        model.put("nClassified",nClassified);
+        model.put("nRumors",nRumor);
+
         return ViewUtil.render(request, model, Path.Template.ANNOTATION);
       };
 
@@ -52,8 +57,16 @@ public class AnnotationController {
             }
         //Render new page
         String query = th.getQuery();
+        int nClassified = th.countClassified();
+        int nRumor = th.countRumor();
         if(tweets != null) model.put ("tweets",tweets);
         if (query != null) model.put ("query",query);
+        model.put("nClassified",nClassified);
+        model.put("nRumors",nRumor);
         return ViewUtil.render(request, model, Path.Template.ANNOTATION);
     };
+
+    private void configurePage () {
+
+    }
 }

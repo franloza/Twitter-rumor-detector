@@ -33,10 +33,10 @@ public class TweetDAO {
             PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setLong(1,s.getId());
             pst.setLong(2,s.getUser().getId());
-            pst.setString(3,s.getUser().getName());
+            pst.setString(3,s.getUser().getScreenName());
             pst.setString(4,s.getText());
             pst.setInt(5,s.getRetweetCount());
-            pst.setDate(6,new Date(s.getCreatedAt().getTime()));
+            pst.setTimestamp(6,(new Timestamp(s.getCreatedAt().getTime())));
             pst.setInt(7,s.getFavoriteCount());
             pst.setInt(8,s.getText().hashCode());
             pst.executeUpdate();
@@ -184,24 +184,35 @@ public class TweetDAO {
         }
 
     /**
-     * Function that returns the amount of tweets classified as rumors by certain user
-     * @param user Name of Twitter account of the user
+     * Function that returns the amount of tweets classified as rumors
      * @return Number of tweets labeled as rumors.
      */
-    public int countRumorTweets (String user) {
-        String sql = "SELECT COUNT(id) FROM tweets WHERE rumor=1 and userName=?";
-        try(Connection con = ds.getConnection();
-        PreparedStatement pst = con.prepareStatement(sql)) {
-        pst.setString(1,user);
-        ResultSet rs = pst.executeQuery();
-        if (rs.next()) {
-           return rs.getInt(1);
-        }
-        else return 0;
-    } catch (SQLException e) {
-        System.err.println(e.getMessage());
-        return -1;
+    public int countRumor () {
+        return count("rumor");
     }
+
+    /**
+     * Function that returns the amount of tweets classified
+     * @return Number of tweets labeled as rumors.
+     */
+    public int countClassified () {
+        return count("classified");
+    }
+
+    private int count(String columnName){
+        String sql = "SELECT COUNT(?) FROM tweets WHERE "+ columnName + "=1";
+        try(Connection con = ds.getConnection();
+            PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setString(1,columnName);
+            ResultSet rs = pst.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+            else return 0;
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            return -1;
+        }
 }
 
     /**

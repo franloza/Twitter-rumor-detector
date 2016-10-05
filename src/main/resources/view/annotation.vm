@@ -8,7 +8,8 @@
                 <li>
                     <blockquote class="twitter-tweet">
                         <b> @$tweet.getUser().getScreenName() </b>  - $tweet.getText()) <br/>
-                        <i class="fa fa-retweet" aria-hidden="true"></i> $tweet.getRetweetCount()
+                        <i class="fa fa-retweet" aria-hidden="true"></i> $tweet.getRetweetCount() <br/>
+                        <span class="creationDate">$tweet.getCreatedAt()</span>
                     </blockquote>
                     <div class="switches">
                         <div class="switch-block">
@@ -39,6 +40,10 @@
         </ul>
         <button type="submit">Next</button>
     </form>
+    <div id="datasetInfo">
+        Number of tweets classified: $nClassified <br/>
+        Number of tweets classified as rumors: $nRumors <br/>
+    </div>
 <script src="/annotation.js"></script>
 #end
 

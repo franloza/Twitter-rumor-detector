@@ -25,7 +25,7 @@ public class TwitterHandler {
     private String currentQuery;
 
     public TwitterHandler() {
-        this.tDao = DataManager.getInstance().getTweetDao();;
+        this.tDao = DataManager.getInstance().getTweetDao();
     }
 
     public List<Status> getTweets() {
@@ -36,7 +36,6 @@ public class TwitterHandler {
         List<Status> tweets = new LinkedList<>();
         try {
             Query query = null;
-            // TODO: Twitter async (http://twitter4j.org/en/code-examples.html#asyncAPI)
             //Filtering
             do {
                 if(query == null) {

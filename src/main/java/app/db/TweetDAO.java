@@ -28,7 +28,8 @@ public class TweetDAO {
      * @return false if there was an error
      */
     public boolean insertTweet (Status s) {
-        String sql = "INSERT INTO tweets (id,userId,userName,text,retweetCount,creationDate,favoriteCount,textHash) VALUES (?,?,?,?,?,?,?,?)";
+        String sql = "INSERT INTO tweets (id,userId,userName,text,retweetCount,creationDate,favoriteCount,textHash) " +
+                "VALUES (?,?,?,?,?,?,?,?)";
         try(Connection con = ds.getConnection();
             PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setLong(1,s.getId());
@@ -39,6 +40,20 @@ public class TweetDAO {
             pst.setTimestamp(6,(new Timestamp(s.getCreatedAt().getTime())));
             pst.setInt(7,s.getFavoriteCount());
             pst.setInt(8,s.getText().hashCode());
+            pst.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean insertCrawledTweet(long id, String text) {
+        String sql = "INSERT INTO crawler (id,text) VALUES (?,?)";
+        try(Connection con = ds.getConnection();
+            PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setLong(1,id);
+            pst.setString(2,text);
             pst.executeUpdate();
             return true;
         } catch (SQLException e) {

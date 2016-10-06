@@ -5,7 +5,7 @@ CREATE TABLE tweets
     userName VARCHAR(150) NOT NULL,
     text MEDIUMTEXT NOT NULL,
     textHash INT(11),
-    creationDate DATE,
+    creationDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     favoriteCount INT(11),
     classified TINYINT(1) DEFAULT '0' NOT NULL,
     assertion TINYINT(1),
@@ -20,4 +20,8 @@ CREATE TABLE keywords
     keyword VARCHAR(100) PRIMARY KEY NOT NULL,
     weight FLOAT DEFAULT '1' NOT NULL
 );
-
+CREATE TABLE crawler
+(
+    id BIGINT(20) PRIMARY KEY NOT NULL,
+    text MEDIUMTEXT NOT NULL
+);

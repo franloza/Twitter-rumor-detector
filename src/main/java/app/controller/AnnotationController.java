@@ -65,8 +65,4 @@ public class AnnotationController {
         model.put("nRumors",nRumor);
         return ViewUtil.render(request, model, Path.Template.ANNOTATION);
     };
-
-    private void configurePage () {
-
-    }
 }

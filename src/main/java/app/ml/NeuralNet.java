@@ -26,9 +26,17 @@ import java.util.regex.Pattern;
 public class NeuralNet {
 
     private Word2Vec model;
-    private final String modelPath = "src/main/resources/data/model.data";
+    private final String modelPath = "/data/model.data";
+
     public NeuralNet() {
-        File f = new File(modelPath);
+        String path = null;
+        try {
+            path = new ClassPathResource(modelPath).getFile().getAbsolutePath();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        File f = new File(path);
+
         if(f.exists() && !f.isDirectory()) {
                 this.load();
         }else{
@@ -130,13 +138,21 @@ public class NeuralNet {
 
     public void save() {
         System.out.println(("Saving model...."));
-        WordVectorSerializer.writeWord2Vec(model, modelPath);
+        String path = null;
+        try {
+            path = new ClassPathResource(modelPath).getFile().getAbsolutePath();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        WordVectorSerializer.writeWord2Vec(model, path);
     }
 
     private void load(){
         System.out.println(("Loading model...."));
+        String path = null;
         try {
-            this.model = WordVectorSerializer.readWord2Vec(new File(modelPath));
+            path = new ClassPathResource(modelPath).getFile().getAbsolutePath();
+            this.model = WordVectorSerializer.readWord2Vec(new File(path));
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -51,6 +51,15 @@ public class DataManager {
 
     private DataSource configureDatabase () {
         //Configure connection to database
+        try {
+            Class.forName("com.mysql.jdbc.Driver").newInstance();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
         ComboPooledDataSource cpds = new ComboPooledDataSource();
         cpds.setJdbcUrl("jdbc:mysql://localhost/trd");
         cpds.setUser("admin");

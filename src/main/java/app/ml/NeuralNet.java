@@ -29,7 +29,6 @@ public class NeuralNet {
     private final String modelPath = "src/main/resources/data/model.data";
 
     public NeuralNet() {
-        String path = null;
         File f = new File(modelPath);
 
         if(f.exists() && !f.isDirectory()) {
@@ -133,16 +132,13 @@ public class NeuralNet {
 
     public void save() {
         System.out.println(("Saving model...."));
-        String path = null;
         WordVectorSerializer.writeWord2Vec(model, modelPath);
     }
 
     private void load(){
         System.out.println(("Loading model...."));
-        String path = null;
         try {
-            path = new ClassPathResource(modelPath).getFile().getAbsolutePath();
-            this.model = WordVectorSerializer.readWord2Vec(new File(path));
+            this.model = WordVectorSerializer.readWord2Vec(new File(modelPath));
         } catch (IOException e) {
             e.printStackTrace();
         }

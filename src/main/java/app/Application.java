@@ -24,7 +24,7 @@ public class Application {
             staticFiles.expireTime(600L);
             port(4567);
             enableDebugScreen();
-            //AnnotationController.start();
+            AnnotationController.start();
             new KeywordCrawler().start();
 
             // Set up before-filters (called before each get/post)

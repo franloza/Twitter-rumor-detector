@@ -1,5 +1,7 @@
 package app.ml;
 
+import app.db.DataManager;
+import app.db.TweetDAO;
 import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.Word2Vec;
@@ -27,37 +29,56 @@ public class NeuralNet {
 
     private Word2Vec model;
     private final String modelPath = "src/main/resources/data/model.data";
+    private Object lock = new Object ();
 
     public NeuralNet() {
         File f = new File(modelPath);
+        TweetDAO tDao = DataManager.getInstance().getTweetDao();
 
         if(f.exists() && !f.isDirectory()) {
                 this.load();
         }else{
-            //Create a new model using some initial tweets
-            List<String> tweets = this.loadInitialTweets("/data/rumorTweets.txt");
-            this.model = trainModel(tweets);
-            //Save the model in a file
-            this.save();
+            //Create a new model
+            HashSet<String> tweets;
+            if(tDao.countCrawled() > 0){
+                createModel();
+            } else {
+                //Load tweets from file
+                tweets = this.loadTweets("/data/rumorTweets.txt");
+                trainModel(tweets);
+                //Save the model in a file
+                this.save();
+            }
         }
+    }
+
+    public synchronized void createModel () {
+        HashSet<String> tweets;
+        //Load tweets from database
+        tweets = this.loadTweets();
+        trainModel(tweets);
+        //Save the model in a file
+        this.save();
     }
 
     public Collection<String> getWordsNearest(String keyword, int n) {
         Collection<String> words = new LinkedList<>();
         Collection<String> keywordColl = Arrays.asList(keyword.split("\\s+"));
-        if (keywordColl.size() > 1) {
-            INDArray vectors = model.getWordVectors(keywordColl);
-            if(vectors.isVector()) {
-                words = model.wordsNearest(vectors, n);
-                //Remove duplicates
-                Iterator it = words.iterator();
-                while (it.hasNext()) {
-                    String w = (String) it.next();
-                    if (keyword.contains(w)) it.remove();
+        synchronized (lock) {
+            if (keywordColl.size() > 1) {
+                INDArray vectors = model.getWordVectors(keywordColl);
+                if (vectors.isVector()) {
+                    words = model.wordsNearest(vectors, n);
+                    //Remove duplicates
+                    Iterator it = words.iterator();
+                    while (it.hasNext()) {
+                        String w = (String) it.next();
+                        if (keyword.contains(w)) it.remove();
+                    }
                 }
+            } else {
+                words = model.wordsNearest(keyword, n);
             }
-        } else {
-            words = model.wordsNearest(keyword,n);
         }
         return words;
     }
@@ -66,10 +87,10 @@ public class NeuralNet {
         return model.getVocab();
     }
 
-    private List<String> loadInitialTweets(String filePath) {
+    private HashSet<String> loadTweets(String filePath) {
         System.out.println("Loading & vectorizing initial tweets...");
         List<String> tokens = null;
-        List<String> tweets = new LinkedList<>();
+        HashSet<String> tweets = new HashSet<>();
         try {
             String path = new ClassPathResource(filePath).getFile().getAbsolutePath();
             SentenceIterator iter = new BasicLineIterator(path);
@@ -87,6 +108,24 @@ public class NeuralNet {
             System.err.println(e.getMessage());
         } catch (IOException e) {
             System.err.println(e.getMessage());
+        }
+        return tweets;
+    }
+
+    private HashSet<String> loadTweets() {
+        System.out.println("Loading & vectorizing crawled tweets...");
+        TweetDAO tDao = DataManager.getInstance().getTweetDao();
+        List<String> tokens = null;
+        HashSet<String> tweets = new HashSet<>();
+        SentenceIterator iter = new CollectionSentenceIterator(tDao.getCrawledTweets());
+        TokenizerFactory t = new DefaultTokenizerFactory();
+        String filteredTweet;
+        //Tokenize the tweets
+        t.setTokenPreProcessor(new CommonPreprocessor());
+        while(iter.hasNext()) {
+            tokens = t.create(iter.nextSentence()).getTokens();
+            filteredTweet = cleanTerms(tokens);
+            tweets.add(filteredTweet);
         }
         return tweets;
     }
@@ -111,8 +150,8 @@ public class NeuralNet {
         return String.join(" ",tokens);
     }
 
-    private static Word2Vec trainModel(List<String> tweets) {
-        System.out.println("Building model....");
+    private void trainModel(HashSet<String> tweets) {
+        System.out.println("Training model....");
         SentenceIterator iter = new CollectionSentenceIterator(tweets);
         TokenizerFactory t = new DefaultTokenizerFactory();
         t.setTokenPreProcessor(new CommonPreprocessor());
@@ -127,7 +166,9 @@ public class NeuralNet {
                 .build();
         System.out.println("Fitting Word2Vec model....");
         vec.fit();
-        return vec;
+        synchronized (lock) {
+            this.model = vec;
+        }
     }
 
     public void save() {

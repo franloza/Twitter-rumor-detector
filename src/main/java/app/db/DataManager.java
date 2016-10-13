@@ -1,10 +1,7 @@
 package app.db;
 
-import app.ml.NeuralNet;
 import app.util.RandomCollection;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
-import org.deeplearning4j.models.word2vec.VocabWord;
-import org.deeplearning4j.models.word2vec.wordstore.VocabCache;
 
 import javax.sql.DataSource;
 
@@ -17,16 +14,12 @@ public class DataManager {
 
     private TweetDAO tweetDao;
     private RandomCollection<String> keywords;
-    private VocabCache<VocabWord> vocabulary;
-    private NeuralNet neuralNet;
 
     private static DataManager instance;
 
     private DataManager() {
-        this.neuralNet = new NeuralNet();
-        this.vocabulary = neuralNet.getVocabulary();
-        this.tweetDao = new TweetDAO(configureDatabase());
-        this.keywords = new RandomCollection<>(tweetDao.getKeywords());
+        if(this.tweetDao == null) this.tweetDao = new TweetDAO(configureDatabase());
+        if(this.keywords == null) this.keywords = new RandomCollection<>(tweetDao.getKeywords());
     }
 
     public static DataManager getInstance() {
@@ -41,23 +34,11 @@ public class DataManager {
         return keywords;
     }
 
-    public VocabCache<VocabWord> getVocabulary() {
-        return vocabulary;
-    }
-
-    public NeuralNet getNeuralNet() {
-        return neuralNet;
-    }
-
     private DataSource configureDatabase () {
         //Configure connection to database
         try {
             Class.forName("com.mysql.jdbc.Driver").newInstance();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
+        } catch (InstantiationException | ClassNotFoundException | IllegalAccessException e) {
             e.printStackTrace();
         }
         ComboPooledDataSource cpds = new ComboPooledDataSource();

@@ -18,13 +18,19 @@ public class AnnotationController {
 
     private static TwitterHandler th;
 
-    public static void start () {
-        th = new TwitterHandler();
+    public static void start (TwitterHandler handler) {
+        th = handler;
     }
 
     public static Route servePage = (Request request, Response response) -> {
         Map<String, Object> model = new HashMap<>();
-        List <Status> tweets = th.getTweets();
+        List <Status> tweets;
+        try {
+            tweets = th.getTweets();
+        } catch (Exception e) {
+            model.put("error",e.getMessage());
+            return ViewUtil.render(request, model, Path.Template.TWITTER_ERROR);
+        }
         String query = th.getQuery();
         int nClassified = th.countClassified();
         int nRumor = th.countRumor();
@@ -32,13 +38,19 @@ public class AnnotationController {
         if (query != null) model.put ("query",query);
         model.put("nClassified",nClassified);
         model.put("nRumors",nRumor);
-
         return ViewUtil.render(request, model, Path.Template.ANNOTATION);
       };
 
     public static Route processRequest = (Request request, Response response) -> {
         Map<String, Object> model = new HashMap<>();
-        List <Status> tweets = th.getTweets();
+        List <Status> tweets;
+        try {
+            tweets = th.getTweets();
+        } catch (Exception e) {
+            model.put("error",e.getMessage());
+            return ViewUtil.render(request, model, Path.Template.TWITTER_ERROR);
+        }
+
         // Hashtag regex
         Pattern pattern = Pattern.compile("#\\w*");
 

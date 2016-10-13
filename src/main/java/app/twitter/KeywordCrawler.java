@@ -2,6 +2,7 @@ package app.twitter;
 
 import app.db.DataManager;
 import app.db.TweetDAO;
+import app.ml.NeuralNet;
 import com.twitter.hbc.ClientBuilder;
 import com.twitter.hbc.core.Client;
 import com.twitter.hbc.core.Constants;
@@ -25,7 +26,16 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class KeywordCrawler {
 
+    //Number of threads used for crawling
     private final int NUM_THREADS = 2;
+    //Amount of tweets new collected before updating the model
+    private final int REFRESH_RATE = 100;
+    //Query builder neural network
+    private NeuralNet nn;
+
+    public KeywordCrawler(NeuralNet nn) {
+        this.nn = nn;
+    }
 
     public void start() {
         /** Set up your blocking queues: Be sure to size these properly based on expected TPS of your stream */
@@ -109,9 +119,18 @@ public class KeywordCrawler {
             String text = jsonObject.getString("text");
             text = tDao.cleanTweetText(text);
 
+            //Insert if is not duplicated
             if (!tDao.checkDuplicate(id,"crawler",text.hashCode()))
                 tDao.insertCrawledTweet(id,text);
-                System.out.println("Keyword Crawler: " + id + " - " + text);
+                //System.out.println("Keyword Crawler: " + id + " - " + text);
+                //Check if the model has to be rebuilt in a new thread
+                if (tDao.countCrawled() % REFRESH_RATE == 0) {
+                    new Thread() {
+                        public void run() {
+                            nn.createModel();
+                        }
+                    }.run();
+                }
         }
         hosebirdClient.stop();
     }

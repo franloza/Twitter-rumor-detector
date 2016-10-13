@@ -24,55 +24,57 @@ public class TwitterHandler {
     private TweetDAO tDao;
     private String currentQuery;
 
+    private QueryBuilder queryBuilder;
+
     public TwitterHandler() {
         this.tDao = DataManager.getInstance().getTweetDao();
+        this.queryBuilder = new QueryBuilder();
     }
 
-    public List<Status> getTweets() {
+    public List<Status> getTweets() throws TwitterException {
 
         /*Authentication is done by means of twitter4j.properties file.
           The factory instance is re-useable and thread safe.*/
         Twitter twitter = new TwitterFactory().getInstance();
         List<Status> tweets = new LinkedList<>();
-        try {
+
             Query query = null;
             //Filtering
             do {
-                if(query == null) {
+                if (query == null) {
                     query = buildQuery();
                     this.currentQuery = query.getQuery();
                 }
-                QueryResult result = twitter.search(query);
-                if (result.getCount() > 0) {
-                    for (Status tweet : result.getTweets()) {
-                        //Minimum number of retweets
-                        if (tweet.getRetweetCount() >= minRetweet) {
-                            //Check if the tweet is duplicated
-                            String text = tweet.getText();
-                            //Remove URLs
-                            text = tDao.cleanTweetText(text);
+                QueryResult result;
+                    result = twitter.search(query);
+                    if (result.getCount() > 0) {
+                        for (Status tweet : result.getTweets()) {
+                            //Minimum number of retweets
+                            if (tweet.getRetweetCount() >= minRetweet) {
+                                //Check if the tweet is duplicated
+                                String text = tweet.getText();
+                                //Remove URLs
+                                text = tDao.cleanTweetText(text);
 
-                            if (!tDao.checkDuplicate(tweet.getId(),"tweets",text.hashCode())) {
-                                //Saves the tweet in the database and adds it to the result list
-                                tweets.add(tweet);
-                                saveTweet(tweet);
+                                if (!tDao.checkDuplicate(tweet.getId(), "tweets", text.hashCode())) {
+                                    //Saves the tweet in the database and adds it to the result list
+                                    tweets.add(tweet);
+                                    saveTweet(tweet);
+                                }
                             }
+                            //Return the tweets in the maximum number of tweets has been reached
+                            if (tweets.size() == tweetsPerPage) break;
                         }
-                        //Return the tweets in the maximum number of tweets has been reached
-                        if (tweets.size() == tweetsPerPage) break;
+                        query = result.nextQuery();
                     }
-                    query = result.nextQuery();
                 }
-            }
             while (tweets.size() < tweetsPerPage);
-        } catch (TwitterException e) {
-            e.printStackTrace();
-        }
         return tweets;
     }
 
+
     private Query buildQuery() {
-        Query query = QueryBuilder.getQuery();
+        Query query = queryBuilder.getQuery();
         this.currentQuery = query.getQuery();
         query.setLang("en");
         query.resultType(Query.MIXED);
@@ -124,6 +126,10 @@ public class TwitterHandler {
 
     public int countRumor() {
         return tDao.countRumor();
+    }
+
+    public QueryBuilder getQueryBuilder() {
+        return queryBuilder;
     }
 
     /*Not useful as Twitter API does not allow to retrieve tweets from more than 1 week"*/

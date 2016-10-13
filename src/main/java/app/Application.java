@@ -3,6 +3,7 @@ package app;
 import app.controller.AnnotationController;
 import app.controller.IndexController;
 import app.controller.KeywordCrawlerController;
+import app.twitter.TwitterHandler;
 import app.util.Filters;
 import app.util.Path;
 import app.util.ViewUtil;
@@ -26,8 +27,9 @@ public class Application {
             enableDebugScreen();
 
             //Initialize controllers
-            AnnotationController.start();
-            KeywordCrawlerController.start();
+            TwitterHandler th = new TwitterHandler();
+            AnnotationController.start(th);
+            KeywordCrawlerController.start(th);
 
             // Set up before-filters (called before each get/post)
             before("*",                  Filters.addTrailingSlashes);

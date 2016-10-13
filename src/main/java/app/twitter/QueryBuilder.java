@@ -2,9 +2,6 @@ package app.twitter;
 
 import app.db.DataManager;
 import app.ml.NeuralNet;
-import org.deeplearning4j.models.word2vec.VocabWord;
-import org.deeplearning4j.models.word2vec.wordstore.VocabCache;
-
 import twitter4j.Query;
 
 import java.util.Random;
@@ -16,9 +13,14 @@ import java.util.Random;
  */
 public class QueryBuilder {
 
-    public static Query getQuery() {
-        VocabCache<VocabWord> cache = DataManager.getInstance().getVocabulary();
-        NeuralNet nn = DataManager.getInstance().getNeuralNet();
+    //Query builder neural network
+    private NeuralNet nn;
+
+    public QueryBuilder() {
+        this.nn = new NeuralNet();
+    }
+
+    public Query getQuery() {
         Random rnd = new Random();
         StringBuilder sb = new StringBuilder();
         String keyword;
@@ -31,6 +33,10 @@ public class QueryBuilder {
         } while (sb.toString().length() < 1);
         System.out.println("Query: " + sb.toString());
         return new Query(sb.toString());
+    }
+
+    public NeuralNet getNeuralNetwork () {
+        return this.nn;
     }
 }
 

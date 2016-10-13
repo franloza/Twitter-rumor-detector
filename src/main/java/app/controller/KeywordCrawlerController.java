@@ -1,6 +1,7 @@
 package app.controller;
 
 import app.twitter.KeywordCrawler;
+import app.twitter.TwitterHandler;
 import app.util.Path;
 import app.util.ViewUtil;
 import spark.Request;
@@ -17,8 +18,8 @@ import java.util.Map;
 public class KeywordCrawlerController {
     private static KeywordCrawler kc;
 
-    public static void start () {
-        kc = new KeywordCrawler();
+    public static void start (TwitterHandler handler) {
+        kc = new KeywordCrawler(handler.getQueryBuilder().getNeuralNetwork());
         kc.start();
     }
 

@@ -20,7 +20,8 @@ public class Path {
         public final static String INDEX = "/view/index.vm";
         public final static String ANNOTATION = "view/annotation.vm";
         public final static String KEYWORD_CRAWLER = "view/keywordCrawler.vm";
-        public static final String NOT_FOUND = "/view/notFound.vm";
+        public final static String NOT_FOUND = "/view/notFound.vm";
+        public final static String TWITTER_ERROR ="/view/twitterError.vm";
     }
 
 }

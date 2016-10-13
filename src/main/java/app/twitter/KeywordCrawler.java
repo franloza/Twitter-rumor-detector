@@ -107,6 +107,8 @@ public class KeywordCrawler {
             JSONObject jsonObject = new JSONObject(msg);
             long id = jsonObject.getLong("id");
             String text = jsonObject.getString("text");
+            text = tDao.cleanTweetText(text);
+
             if (!tDao.checkDuplicate(id,"crawler",text.hashCode()))
                 tDao.insertCrawledTweet(id,text);
                 System.out.println("Keyword Crawler: " + id + " - " + text);

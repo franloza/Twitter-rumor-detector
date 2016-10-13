@@ -35,11 +35,12 @@ public class TweetDAO {
             pst.setLong(1,s.getId());
             pst.setLong(2,s.getUser().getId());
             pst.setString(3,s.getUser().getScreenName());
-            pst.setString(4,s.getText());
+            String text =  this.cleanTweetText(s.getText());
+            pst.setString(4,text);
             pst.setInt(5,s.getRetweetCount());
             pst.setTimestamp(6,(new Timestamp(s.getCreatedAt().getTime())));
             pst.setInt(7,s.getFavoriteCount());
-            pst.setInt(8,s.getText().hashCode());
+            pst.setInt(8,text.hashCode());
             pst.executeUpdate();
             return true;
         } catch (SQLException e) {
@@ -348,5 +349,13 @@ public class TweetDAO {
         return getList(sql);
     }
 
+    public String cleanTweetText (String text) {
+        //Remove URLs
+        text = text.replaceAll("https?://\\S+\\s?", "");
 
+        //Remove mentions
+        text = text.replaceAll("RT +@[^ :]+:?", "");
+
+        return text;
+    }
 }

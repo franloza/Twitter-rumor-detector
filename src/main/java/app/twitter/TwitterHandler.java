@@ -45,11 +45,14 @@ public class TwitterHandler {
                 QueryResult result = twitter.search(query);
                 if (result.getCount() > 0) {
                     for (Status tweet : result.getTweets()) {
-                        //TODO: It's pulling (classic) reweets? Try to find original.
                         //Minimum number of retweets
                         if (tweet.getRetweetCount() >= minRetweet) {
                             //Check if the tweet is duplicated
-                            if (!tDao.checkDuplicate(tweet.getId(),"tweets",tweet.getText().hashCode())) {
+                            String text = tweet.getText();
+                            //Remove URLs
+                            text = tDao.cleanTweetText(text);
+
+                            if (!tDao.checkDuplicate(tweet.getId(),"tweets",text.hashCode())) {
                                 //Saves the tweet in the database and adds it to the result list
                                 tweets.add(tweet);
                                 saveTweet(tweet);

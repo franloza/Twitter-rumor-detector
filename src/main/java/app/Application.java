@@ -2,7 +2,7 @@ package app;
 
 import app.controller.AnnotationController;
 import app.controller.IndexController;
-import app.twitter.KeywordCrawler;
+import app.controller.KeywordCrawlerController;
 import app.util.Filters;
 import app.util.Path;
 import app.util.ViewUtil;
@@ -24,8 +24,10 @@ public class Application {
             staticFiles.expireTime(600L);
             port(4567);
             enableDebugScreen();
+
+            //Initialize controllers
             AnnotationController.start();
-            new KeywordCrawler().start();
+            KeywordCrawlerController.start();
 
             // Set up before-filters (called before each get/post)
             before("*",                  Filters.addTrailingSlashes);
@@ -34,6 +36,7 @@ public class Application {
             // Set up routes
             get(Path.Web.INDEX,          IndexController.servePage);
             get(Path.Web.ANNOTATION,     AnnotationController.servePage);
+            get(Path.Web.KEYWORD_CRAWLER,KeywordCrawlerController.servePage);
             post(Path.Web.ANNOTATION,    AnnotationController.processRequest);
             get("*",                     ViewUtil.notFound);
 

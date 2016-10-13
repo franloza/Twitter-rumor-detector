@@ -23,5 +23,7 @@ CREATE TABLE keywords
 CREATE TABLE crawler
 (
     id BIGINT(20) PRIMARY KEY NOT NULL,
-    text MEDIUMTEXT NOT NULL
+    text MEDIUMTEXT NOT NULL,
+    textHash INT(11)
 );
+CREATE UNIQUE INDEX crawler_textHash_uindex ON crawler (textHash);

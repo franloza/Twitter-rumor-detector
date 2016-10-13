@@ -69,6 +69,18 @@ public class KeywordCrawler {
 
     }
 
+    public List<String> getTweets(int lastTweets) {
+        TweetDAO tDao = DataManager.getInstance().getTweetDao();
+        return tDao.getCrawledTweets (lastTweets);
+    }
+
+
+
+    public int countCrawled() {
+        TweetDAO tDao = DataManager.getInstance().getTweetDao();
+        return tDao.countCrawled();
+    }
+
     private class ThreadCrawler extends Thread {
         private BlockingQueue<String> msgQueue;
         private Client hosebirdClient;
@@ -95,8 +107,9 @@ public class KeywordCrawler {
             JSONObject jsonObject = new JSONObject(msg);
             long id = jsonObject.getLong("id");
             String text = jsonObject.getString("text");
-            System.out.println("Keyword Crawler: " + id + " - " + text);
-            tDao.insertCrawledTweet(id,text);
+            if (!tDao.checkDuplicate(id,"crawler",text.hashCode()))
+                tDao.insertCrawledTweet(id,text);
+                System.out.println("Keyword Crawler: " + id + " - " + text);
         }
         hosebirdClient.stop();
     }

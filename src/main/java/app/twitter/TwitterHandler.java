@@ -49,8 +49,10 @@ public class TwitterHandler {
                         //Minimum number of retweets
                         if (tweet.getRetweetCount() >= minRetweet) {
                             //Check if the tweet is duplicated
-                            if (!tDao.checkDuplicate(tweet.getId(),tweet.getText().hashCode())) {
+                            if (!tDao.checkDuplicate(tweet.getId(),"tweets",tweet.getText().hashCode())) {
+                                //Saves the tweet in the database and adds it to the result list
                                 tweets.add(tweet);
+                                saveTweet(tweet);
                             }
                         }
                         //Return the tweets in the maximum number of tweets has been reached
@@ -63,8 +65,6 @@ public class TwitterHandler {
         } catch (TwitterException e) {
             e.printStackTrace();
         }
-        //Save new tweets to the database
-        saveTweets(tweets);
         return tweets;
     }
 
@@ -79,6 +79,10 @@ public class TwitterHandler {
         query.setSince(getSince(year));
         query.setUntil(getUntil(year));*/
         return query;
+    }
+
+    private void saveTweet(Status tweet) {
+        tDao.insertTweet(tweet);
     }
 
     private void saveTweets(List<Status> tweets) {

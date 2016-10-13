@@ -13,11 +13,13 @@ public class Path {
     public static class Web {
         @Getter public static final String INDEX = "/";
         @Getter public static final String ANNOTATION = "/annotation/";
+        @Getter public static final String KEYWORD_CRAWLER = "/keyword-crawler/";
     }
 
     public static class Template {
         public final static String INDEX = "/view/index.vm";
         public final static String ANNOTATION = "view/annotation.vm";
+        public final static String KEYWORD_CRAWLER = "view/keywordCrawler.vm";
         public static final String NOT_FOUND = "/view/notFound.vm";
     }
 

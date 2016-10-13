@@ -49,11 +49,12 @@ public class TweetDAO {
     }
 
     public boolean insertCrawledTweet(long id, String text) {
-        String sql = "INSERT INTO crawler (id,text) VALUES (?,?)";
+        String sql = "INSERT INTO crawler (id,text,textHash) VALUES (?,?,?)";
         try(Connection con = ds.getConnection();
             PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setLong(1,id);
             pst.setString(2,text);
+            pst.setInt(3,text.hashCode());
             pst.executeUpdate();
             return true;
         } catch (SQLException e) {
@@ -134,16 +135,16 @@ public class TweetDAO {
      * @param id
      * @return true if it exists
      */
-    public boolean checkDuplicate(long id,int textHash) {
-        String sql = "SELECT COUNT(id) FROM tweets WHERE id=? OR textHash=?";
+    public boolean checkDuplicate(long id, String tableName, int textHash) {
+        String sql = "SELECT COUNT(id) FROM " + tableName + " WHERE id=? OR textHash=?";
         try(Connection con = ds.getConnection();
             PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setLong(1,id);
             pst.setInt(2,textHash);
             ResultSet rs = pst.executeQuery();
             if (rs.next()) {
-                if (rs.getInt(1) == 0) return false;
-                else return true;
+                if (rs.getInt(1) > 0) return true;
+                else return false;
             }
             return false;
 
@@ -203,7 +204,7 @@ public class TweetDAO {
      * @return Number of tweets labeled as rumors.
      */
     public int countRumor () {
-        return count("rumor");
+        return countTrues("rumor","tweets");
     }
 
     /**
@@ -211,24 +212,32 @@ public class TweetDAO {
      * @return Number of tweets labeled as rumors.
      */
     public int countClassified () {
-        return count("classified");
+        return countTrues("classified","tweets");
     }
 
-    private int count(String columnName){
-        String sql = "SELECT COUNT(?) FROM tweets WHERE "+ columnName + "=1";
-        try(Connection con = ds.getConnection();
-            PreparedStatement pst = con.prepareStatement(sql)) {
-            pst.setString(1,columnName);
-            ResultSet rs = pst.executeQuery();
-            if (rs.next()) {
-                return rs.getInt(1);
-            }
-            else return 0;
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return -1;
+    private int countTrues(String columnName,String tableName){
+        String sql = "SELECT COUNT(?) FROM " + tableName + " WHERE "+ columnName + "=1";
+        return getCounts(sql,columnName);
         }
-}
+
+    private int count(String columnName,String tableName){
+        String sql = "SELECT COUNT(?) FROM " + tableName;
+        return getCounts(sql,columnName);
+        }
+
+        private int getCounts (String sql, String columnName) {
+            try (Connection con = ds.getConnection();
+                 PreparedStatement pst = con.prepareStatement(sql)) {
+                pst.setString(1, columnName);
+                ResultSet rs = pst.executeQuery();
+                if (rs.next()) {
+                    return rs.getInt(1);
+                } else return 0;
+            } catch (SQLException e) {
+                System.err.println(e.getMessage());
+                return -1;
+            }
+        }
 
     /**
      * Function that returns a dictionary ("user" : rumor_tweets) that stores the amount of tweets classified
@@ -317,4 +326,27 @@ public class TweetDAO {
             return "";
         }
     }
+
+    public int countCrawled() {
+        return count("id","crawler");
+    }
+
+    public List<String> getCrawledTweets() {
+        return getCrawledTweets(0);
+    }
+
+    public List<String> getCrawledTweets(int lastTweets) {
+        String sql = null;
+        if (lastTweets > 0) {
+            sql = "SELECT text FROM (" +
+                    "SELECT * FROM crawler ORDER BY id DESC LIMIT " + lastTweets +
+                    " ) sub " +
+                    "ORDER BY id ASC";
+        } else {
+            sql = "SELECT text FROM crawler";
+        }
+        return getList(sql);
+    }
+
+
 }

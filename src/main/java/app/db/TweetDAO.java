@@ -352,10 +352,23 @@ public class TweetDAO {
     public String cleanTweetText (String text) {
         //Remove URLs
         text = text.replaceAll("https?://\\S+\\s?", "");
-
         //Remove mentions
         text = text.replaceAll("RT +@[^ :]+:?", "");
-
         return text;
+    }
+
+    public long getMinId() {
+        String sql = "SELECT MIN(id) FROM tweets";
+        try(Connection con = ds.getConnection();
+            PreparedStatement pst = con.prepareStatement(sql)) {
+            ResultSet rs = pst.executeQuery();
+            if (rs.next()) {
+                return rs.getLong(1);
+            }
+            return 0;
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            return 0;
+        }
     }
 }

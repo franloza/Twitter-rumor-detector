@@ -37,38 +37,35 @@ public class TwitterHandler {
           The factory instance is re-useable and thread safe.*/
         Twitter twitter = new TwitterFactory().getInstance();
         List<Status> tweets = new LinkedList<>();
-
-            Query query = null;
-            //Filtering
-            do {
-                if (query == null) {
-                    query = buildQuery();
-                    this.currentQuery = query.getQuery();
-                }
-                QueryResult result;
-                    result = twitter.search(query);
-                    if (result.getCount() > 0) {
-                        for (Status tweet : result.getTweets()) {
-                            //Minimum number of retweets
-                            if (tweet.getRetweetCount() >= minRetweet) {
-                                //Check if the tweet is duplicated
-                                String text = tweet.getText();
-                                //Remove URLs
-                                text = tDao.cleanTweetText(text);
-
-                                if (!tDao.checkDuplicate(tweet.getId(), "tweets", text.hashCode())) {
-                                    //Saves the tweet in the database and adds it to the result list
-                                    tweets.add(tweet);
-                                    saveTweet(tweet);
-                                }
-                            }
-                            //Return the tweets in the maximum number of tweets has been reached
-                            if (tweets.size() == tweetsPerPage) break;
+        Query query = null;
+        do {
+            if (query == null) {
+                query = buildQuery();
+                this.currentQuery = query.getQuery();
+            }
+            QueryResult result;
+            result = twitter.search(query);
+            if (result.getCount() > 0) {
+                for (Status tweet : result.getTweets()) {
+                    //Minimum number of retweets
+                    if (tweet.getRetweetCount() >= minRetweet) {
+                        //Check if the tweet is duplicated
+                        String text = tweet.getText();
+                        //Remove URLs
+                        text = tDao.cleanTweetText(text);
+                        if (!tDao.checkDuplicate(tweet.getId(), "tweets", text.hashCode())) {
+                            //Saves the tweet in the database and adds it to the result list
+                            tweets.add(tweet);
+                            saveTweet(tweet);
                         }
-                        query = result.nextQuery();
                     }
+                    //Return the tweets in the maximum number of tweets has been reached
+                    if (tweets.size() == tweetsPerPage) break;
                 }
-            while (tweets.size() < tweetsPerPage);
+            }
+            query = result.nextQuery();
+        }
+        while (tweets.size() < tweetsPerPage);
         return tweets;
     }
 
@@ -79,6 +76,8 @@ public class TwitterHandler {
         query.setLang("en");
         query.resultType(Query.MIXED);
         query.setCount(tweetsPerPage);
+        long id = tDao.getMinId();
+        if (id != 0) query.setMaxId(id);
         /*
         String year = getRandomYear();
         query.setSince(getSince(year));

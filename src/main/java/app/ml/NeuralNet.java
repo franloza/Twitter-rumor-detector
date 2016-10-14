@@ -151,7 +151,6 @@ public class NeuralNet {
     }
 
     private void trainModel(HashSet<String> tweets) {
-        System.out.println("Training model....");
         SentenceIterator iter = new CollectionSentenceIterator(tweets);
         TokenizerFactory t = new DefaultTokenizerFactory();
         t.setTokenPreProcessor(new CommonPreprocessor());

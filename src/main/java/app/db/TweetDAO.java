@@ -358,9 +358,19 @@ public class TweetDAO {
     }
 
     public long getMinId() {
-        String sql = "SELECT MIN(id) FROM tweets";
+        return getMinId(null);
+    }
+
+    public long getMinId(String filter) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT MIN(id) FROM tweets");
+        if(filter != null) {
+            filter = "%" + filter.trim() + "%";
+            sb.append(" WHERE text LIKE ?");
+        }
         try(Connection con = ds.getConnection();
-            PreparedStatement pst = con.prepareStatement(sql)) {
+            PreparedStatement pst = con.prepareStatement(sb.toString())) {
+            pst.setString(1,filter);
             ResultSet rs = pst.executeQuery();
             if (rs.next()) {
                 return rs.getLong(1);

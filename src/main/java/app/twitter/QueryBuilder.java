@@ -15,7 +15,9 @@ public class QueryBuilder {
 
     //Query builder neural network
     private NeuralNet nn;
-
+    //Number of mean terms per query
+    private final float meanTerms = 2;
+    private final float deviationTerms = 2;
     public QueryBuilder() {
         this.nn = new NeuralNet();
     }
@@ -31,7 +33,6 @@ public class QueryBuilder {
         do {
             sb.append(String.join(" ", nn.getWordsNearest(keyword, queryTerms)));
         } while (sb.toString().length() < 1);
-        System.out.println("Query: " + sb.toString());
         return new Query(sb.toString());
     }
 

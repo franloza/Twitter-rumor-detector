@@ -357,28 +357,77 @@ public class TweetDAO {
         return text;
     }
 
-    public long getMinId() {
-        return getMinId(null);
-    }
-
-    public long getMinId(String filter) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("SELECT MIN(id) FROM tweets");
-        if(filter != null) {
-            filter = "%" + filter.trim() + "%";
-            sb.append(" WHERE text LIKE ?");
-        }
+    public long getMinId(String query) {
+        String sql = "SELECT minTweetId FROM queries WHERE query=?";
         try(Connection con = ds.getConnection();
-            PreparedStatement pst = con.prepareStatement(sb.toString())) {
-            pst.setString(1,filter);
+            PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setString(1,query);
             ResultSet rs = pst.executeQuery();
             if (rs.next()) {
-                return rs.getLong(1);
+               return rs.getLong(1);
             }
-            return 0;
+            else return 0;
         } catch (SQLException e) {
             System.err.println(e.getMessage());
             return 0;
+        }
+    }
+
+    public void deleteOldestUnclassified(long cacheUnclassified) {
+        String sql = "DELETE FROM tweets WHERE id NOT IN (\n" +
+                "  SELECT id FROM (" +
+                "    SELECT id FROM tweets WHERE classified=0 ORDER BY id ASC LIMIT ?) sub) AND classified=0;";
+        try(Connection con = ds.getConnection();
+            PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setLong(1,cacheUnclassified);
+            pst.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
+    }
+
+    public boolean updateQuery(String query, long minId, int count) {
+        String sql = "SELECT COUNT(query) FROM queries WHERE query=?";
+        try(Connection con = ds.getConnection();
+            PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setString(1,query);
+            ResultSet rs = pst.executeQuery();
+            if (rs.next()) {
+                //The keyword is already in the data base
+                PreparedStatement pst2;
+                if (rs.getInt(1) > 0 ) {
+                    sql = "UPDATE queries SET minTweetId=?, counter = counter + ? WHERE query=?";
+                    pst2 = con.prepareStatement(sql);
+                    pst2.setLong(1,minId);
+                    pst2.setInt(2,count);
+                    pst2.setString(3,query);
+                }
+                else {
+                    sql = "INSERT INTO queries (minTweetId,query,counter) VALUES(?,?,?)";
+                    pst2 = con.prepareStatement(sql);
+                    pst2.setLong(1,minId);
+                    pst2.setString(2,query);
+                    pst2.setInt(3,count);
+                }
+                if (pst2.executeUpdate() < 1) return false;
+            }
+            else return false;
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            return false;
+        }
+        return true;
+    }
+
+    public boolean resetQueryTweetId (String query) {
+        String sql = "UPDATE queries SET minTweetId=0 WHERE query=?";
+        try(Connection con = ds.getConnection();
+            PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setString(1,query);
+            return (pst.executeUpdate() >0);
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            return false;
         }
     }
 }

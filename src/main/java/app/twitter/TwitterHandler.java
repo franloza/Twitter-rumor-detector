@@ -17,9 +17,10 @@ public class TwitterHandler {
     //Maximum number of past years in which the search will be done
     private static final int NUMBER_OF_YEARS =  6;
     private static int minRetweet = 0;
-    private static int tweetsPerPage = 50;
+    private static int tweetsPerPage = 20;
     //Amount of keyword weight that is increased each tweet is classified as rumor
     private static double deltaWeight = 0.1;
+    private static long cacheUnclassified = 100; //Number of unclassified examples allowed before it's deleted
 
     private TweetDAO tDao;
     private String currentQuery;
@@ -44,28 +45,30 @@ public class TwitterHandler {
             this.currentQuery = query.getQuery();
         }
         QueryResult result;
+        long minId = 0;
         result = twitter.search(query);
-        if (result.getCount() > 0) {
-            for (Status tweet : result.getTweets()) {
-                //Minimum number of retweets
-                if (tweet.getRetweetCount() >= minRetweet) {
-                    //Check if the tweet is duplicated
-                    String text = tweet.getText();
-                    //Remove URLs
-                    text = tDao.cleanTweetText(text);
-                    if (!tDao.checkDuplicate(tweet.getId(), "tweets", text.hashCode())) {
-                        //Saves the tweet in the database and adds it to the result list
-                        tweets.add(tweet);
-                        saveTweet(tweet);
-                        usedResults++;
-                    }
+        for (Status tweet : result.getTweets()) {
+            //Minimum number of retweets
+            if (tweet.getRetweetCount() >= minRetweet) {
+                //Check if the tweet is duplicated
+                String text = tweet.getText();
+                //Remove URLs
+                text = tDao.cleanTweetText(text);
+                if (!tDao.checkDuplicate(tweet.getId(), "tweets", text.hashCode())) {
+                    //Saves the tweet in the database and adds it to the result list
+                    tweets.add(tweet);
+                    saveTweet(tweet);
+                    usedResults++;
+                    minId = tweet.getId();
                 }
-                //Return the tweets in the maximum number of tweets has been reached
-                if (tweets.size() == tweetsPerPage) break;
             }
-            System.out.println("Query: "+ currentQuery + " - Number of found results: " + result.getCount() +
-            "- Number of used results: " + usedResults);
+            //Return the tweets in the maximum number of tweets has been reached
+            if (tweets.size() == tweetsPerPage) break;
         }
+        tDao.updateQuery(currentQuery,minId,tweets.size());
+
+        System.out.println("Query: "+ currentQuery + " - Number of found results: " + result.getTweets().size() +
+        "- Number of used results: " + usedResults);
         return tweets;
     }
 
@@ -75,9 +78,9 @@ public class TwitterHandler {
         this.currentQuery = query.getQuery();
         query.setLang("en");
         query.resultType(Query.MIXED);
-        query.setCount(tweetsPerPage*10);
+        query.setCount(tweetsPerPage*5);
         long id = tDao.getMinId(currentQuery);
-        if (id != 0) query.setMaxId(id);
+        if (id != 0) query.setMaxId(id-1);
         /*
         String year = getRandomYear();
         query.setSince(getSince(year));
@@ -144,5 +147,9 @@ public class TwitterHandler {
 
     private String getUntil(String year) {
         return year + "-12-31";
+    }
+
+    public void cleanUnclassified() {
+        tDao.deleteOldestUnclassified(cacheUnclassified);
     }
 }

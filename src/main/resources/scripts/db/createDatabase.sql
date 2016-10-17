@@ -27,3 +27,10 @@ CREATE TABLE crawler
     textHash INT(11)
 );
 CREATE UNIQUE INDEX crawler_textHash_uindex ON crawler (textHash);
+CREATE TABLE queries
+(
+    id INT(11) PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    query MEDIUMTEXT,
+    minTweetId MEDIUMTEXT,
+    counter INT(11) DEFAULT '0'
+);

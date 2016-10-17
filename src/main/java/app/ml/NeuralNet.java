@@ -63,7 +63,8 @@ public class NeuralNet {
 
     public Collection<String> getWordsNearest(String keyword, int n) {
         Collection<String> words = new LinkedList<>();
-        Collection<String> keywordColl = Arrays.asList(keyword.split("\\s+"));
+
+        Collection<String> keywordColl = tokenizeString(keyword);
         synchronized (lock) {
             if (keywordColl.size() > 1) {
                 INDArray vectors = model.getWordVectors(keywordColl);
@@ -93,17 +94,7 @@ public class NeuralNet {
         HashSet<String> tweets = new HashSet<>();
         try {
             String path = new ClassPathResource(filePath).getFile().getAbsolutePath();
-            SentenceIterator iter = new BasicLineIterator(path);
-            String filteredTweet;
-
-            //Tokenize the tweets
-            TokenizerFactory t = new DefaultTokenizerFactory();
-            t.setTokenPreProcessor(new CommonPreprocessor());
-            while(iter.hasNext()) {
-                tokens = t.create(iter.nextSentence()).getTokens();
-                filteredTweet = cleanTerms(tokens);
-                tweets.add(filteredTweet);
-            }
+            steamFile(tweets, path);
         } catch (FileNotFoundException e) {
             System.err.println(e.getMessage());
         } catch (IOException e) {
@@ -112,12 +103,31 @@ public class NeuralNet {
         return tweets;
     }
 
+    private void steamFile(HashSet<String> tweets, String path) throws FileNotFoundException {
+        List<String> tokens;SentenceIterator iter = new BasicLineIterator(path);
+        String filteredTweet;
+
+        //Tokenize the tweets
+        TokenizerFactory t = new DefaultTokenizerFactory();
+        t.setTokenPreProcessor(new CommonPreprocessor());
+        while(iter.hasNext()) {
+            tokens = t.create(iter.nextSentence()).getTokens();
+            filteredTweet = cleanTerms(tokens);
+            tweets.add(filteredTweet);
+        }
+    }
+
     private HashSet<String> loadTweets() {
         System.out.println("Loading & vectorizing crawled tweets...");
         TweetDAO tDao = DataManager.getInstance().getTweetDao();
+        return steamCollection(tDao.getCrawledTweets());
+    }
+
+    private HashSet<String> steamCollection(Collection<String> collection) {
+
         List<String> tokens = null;
         HashSet<String> tweets = new HashSet<>();
-        SentenceIterator iter = new CollectionSentenceIterator(tDao.getCrawledTweets());
+        SentenceIterator iter = new CollectionSentenceIterator(collection);
         TokenizerFactory t = new DefaultTokenizerFactory();
         String filteredTweet;
         //Tokenize the tweets
@@ -130,7 +140,21 @@ public class NeuralNet {
         return tweets;
     }
 
-    private static String cleanTerms(List<String> tokens) {
+    private List<String> tokenizeString(String string) {
+
+        ArrayList<String> collection = new ArrayList<String>();
+        collection.add(string);
+        List<String> tokens = null;
+        SentenceIterator iter = new CollectionSentenceIterator(collection);
+        TokenizerFactory t = new DefaultTokenizerFactory();
+        String filteredTweet;
+        //Tokenize the tweets
+        t.setTokenPreProcessor(new CommonPreprocessor());
+        tokens = t.create(iter.nextSentence()).getTokens();
+        return Arrays.asList(cleanTerms(tokens).split("\\s+"));
+    }
+
+    public static String cleanTerms(List<String> tokens) {
         Iterator<String> i = tokens.iterator();
         String s;
         while (i.hasNext()) {

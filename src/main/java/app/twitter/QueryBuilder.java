@@ -4,7 +4,7 @@ import app.db.DataManager;
 import app.ml.NeuralNet;
 import twitter4j.Query;
 
-import java.util.Random;
+import java.util.*;
 
 /**
  * @author Fran Lozano
@@ -16,8 +16,9 @@ public class QueryBuilder {
     //Query builder neural network
     private NeuralNet nn;
     //Number of mean terms per query
-    private final float meanTerms = 2;
+    private final float meanTerms = 4;
     private final float deviationTerms = 2;
+    private final int similarWords = 5;
     public QueryBuilder() {
         this.nn = new NeuralNet();
     }
@@ -26,14 +27,22 @@ public class QueryBuilder {
         Random rnd = new Random();
         StringBuilder sb = new StringBuilder();
         String keyword;
-        int queryTerms = (int) Math.abs(Math.round(rnd.nextGaussian()+1));
+        List<String> additionalWords = new ArrayList<String>();
+        int queryTerms = (int) Math.abs(Math.round(rnd.nextGaussian()*meanTerms+deviationTerms));
         keyword = DataManager.getInstance().getKeywords().next();
         sb.append(keyword);
-        sb.append(" ");
-        do {
-            sb.append(String.join(" ", nn.getWordsNearest(keyword, queryTerms)));
-        } while (sb.toString().length() < 1);
-        return new Query(sb.toString());
+        int keywordSize = keyword.split("\\s+").length;
+        //Query expansion
+        if (keywordSize < queryTerms) {
+            additionalWords = (List<String>) nn.getWordsNearest(keyword, similarWords);
+            Collections.shuffle(additionalWords);
+            Iterator it = additionalWords.iterator();
+            for (int i = 0; i < queryTerms-keywordSize;i++) {
+                if (it.hasNext())
+                    sb.append(" " + it.next());
+            }
+        }
+        return new Query(sb.toString().trim());
     }
 
     public NeuralNet getNeuralNetwork () {

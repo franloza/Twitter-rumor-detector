@@ -7,6 +7,7 @@ import spark.Request;
 import spark.Response;
 import spark.Route;
 import twitter4j.Status;
+import twitter4j.TwitterException;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -26,15 +27,17 @@ public class AnnotationController {
         Map<String, Object> model = new HashMap<>();
         List <Status> tweets;
         try {
-            tweets = th.getTweets();
-        } catch (Exception e) {
-            model.put("error",e.getMessage());
+            do {
+                tweets = th.getTweets();
+            } while (tweets.size() == 0);
+        } catch (TwitterException e) {
+            model.put("error", e.getMessage());
             return ViewUtil.render(request, model, Path.Template.TWITTER_ERROR);
         }
         String query = th.getQuery();
         int nClassified = th.countClassified();
         int nRumor = th.countRumor();
-        if(tweets != null) model.put ("tweets",tweets);
+        model.put ("tweets",tweets);
         if (query != null) model.put ("query",query);
         model.put("nClassified",nClassified);
         model.put("nRumors",nRumor);
@@ -44,34 +47,48 @@ public class AnnotationController {
     public static Route processRequest = (Request request, Response response) -> {
         Map<String, Object> model = new HashMap<>();
         List <Status> tweets;
-        try {
-            tweets = th.getTweets();
-        } catch (Exception e) {
-            model.put("error",e.getMessage());
-            return ViewUtil.render(request, model, Path.Template.TWITTER_ERROR);
-        }
 
         // Hashtag regex
         Pattern pattern = Pattern.compile("#\\w*");
-
+        long id;
+        int i = 1;
         //Classify tweets
-        for (int i = 1; i <= 10; i++) {
+        String strId = request.queryParams("id_"+i);
+        while  (strId != null && !strId.equals("")) {
             List <String> labels = new LinkedList<>();
             labels.add(request.queryParams("assertion_"+i));
             labels.add(request.queryParams("topic_"+i));
             labels.add(request.queryParams("rumor_"+i));
-            th.classifyTweet(Long.parseLong(request.queryParams("id_"+i)),labels);
-
-            //Update the weights for the keyword(s)
-            if (request.queryParams("rumor_" + (i)) != null) {
-                th.updateKeywordsWeight(Long.parseLong(request.queryParams("id_"+i)));
+            try {
+                id = Long.parseLong(strId);
+                th.classifyTweet(id, labels);
+                //Update the weights for the keyword(s)
+                if (request.queryParams("rumor_" + (i)) != null) {
+                    th.updateKeywordsWeight(id);
                 }
+            } catch (NumberFormatException e) {
+                System.err.println(e.getMessage());
             }
+            i++;
+            strId = request.queryParams("id_"+i);
+            }
+
+        //Delete non classified if the limit was reached
+        th.cleanUnclassified();
+
         //Render new page
+        try {
+            do {
+                tweets = th.getTweets();
+            } while(tweets.size() == 0);
+        } catch (Exception e) {
+            model.put("error",e.getMessage());
+            return ViewUtil.render(request, model, Path.Template.TWITTER_ERROR);
+        }
         String query = th.getQuery();
         int nClassified = th.countClassified();
         int nRumor = th.countRumor();
-        if(tweets != null) model.put ("tweets",tweets);
+        model.put ("tweets",tweets);
         if (query != null) model.put ("query",query);
         model.put("nClassified",nClassified);
         model.put("nRumors",nRumor);

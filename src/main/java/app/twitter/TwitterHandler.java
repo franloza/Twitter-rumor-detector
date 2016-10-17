@@ -19,7 +19,7 @@ public class TwitterHandler {
     private static int minRetweet = 0;
     private static int tweetsPerPage = 20;
     //Amount of keyword weight that is increased each tweet is classified as rumor
-    private static double deltaWeight = 0.1;
+    private static double deltaWeight = 0.01;
     private static long cacheUnclassified = 100; //Number of unclassified examples allowed before it's deleted
 
     private TweetDAO tDao;

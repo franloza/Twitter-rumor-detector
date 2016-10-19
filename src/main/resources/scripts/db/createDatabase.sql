@@ -34,3 +34,38 @@ CREATE TABLE queries
     minTweetId MEDIUMTEXT,
     counter INT(11) DEFAULT '0'
 );
+
+CREATE TABLE tweets_crawled_tf
+(
+    id BIGINT(20) PRIMARY KEY NOT NULL,
+    userId BIGINT(20),
+    userName VARCHAR(150) NOT NULL,
+    text MEDIUMTEXT NOT NULL,
+    textHash INT(11),
+    creationDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    favoriteCount INT(11),
+    classified TINYINT(1) DEFAULT '0' NOT NULL,
+    assertion TINYINT(1),
+    topic TINYINT(1),
+    rumor TINYINT(1),
+    retweetCount INT(11),
+    score DOUBLE DEFAULT '0'
+);
+
+CREATE TABLE tweets_crawled_tfidf
+(
+    id BIGINT(20) PRIMARY KEY NOT NULL,
+    userId BIGINT(20),
+    userName VARCHAR(150) NOT NULL,
+    text MEDIUMTEXT NOT NULL,
+    textHash INT(11),
+    creationDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    favoriteCount INT(11),
+    classified TINYINT(1) DEFAULT '0' NOT NULL,
+    assertion TINYINT(1),
+    topic TINYINT(1),
+    rumor TINYINT(1),
+    retweetCount INT(11),
+    score DOUBLE DEFAULT '0'
+);
+

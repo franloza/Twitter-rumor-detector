@@ -28,8 +28,29 @@ public class TweetDAO {
      * @return false if there was an error
      */
     public boolean insertTweet (Status s) {
-        String sql = "INSERT INTO tweets (id,userId,userName,text,retweetCount,creationDate,favoriteCount,textHash) " +
-                "VALUES (?,?,?,?,?,?,?,?)";
+        return insertTweet("tweets",s,-1);
+    }
+
+    public boolean insertCrawledTweetTf (Status s,double score) {
+        return insertTweet("tweets_crawled_tf",s,score);
+    }
+
+    public boolean insertCrawledTweetTfIdf (Status s, double score) {
+        return insertTweet("tweets_crawled_tfidf",s,score);
+    }
+
+    private boolean insertTweet (String tableName,Status s, double score) {
+        boolean scored = false;
+        String sql;
+        if (score >= 0) scored = true;
+
+        if (scored) {
+            sql = "INSERT INTO " + tableName + " (id,userId,userName,text,retweetCount,creationDate,favoriteCount,textHash,score) " +
+                    "VALUES (?,?,?,?,?,?,?,?,?)";
+        } else {
+            sql = "INSERT INTO " + tableName + " (id,userId,userName,text,retweetCount,creationDate,favoriteCount,textHash) " +
+                    "VALUES (?,?,?,?,?,?,?,?)";
+        }
         try(Connection con = ds.getConnection();
             PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setLong(1,s.getId());
@@ -41,6 +62,7 @@ public class TweetDAO {
             pst.setTimestamp(6,(new Timestamp(s.getCreatedAt().getTime())));
             pst.setInt(7,s.getFavoriteCount());
             pst.setInt(8,text.hashCode());
+            if(scored) pst.setDouble (9,score);
             pst.executeUpdate();
             return true;
         } catch (SQLException e) {

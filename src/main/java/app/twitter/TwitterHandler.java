@@ -48,12 +48,15 @@ public class TwitterHandler {
         long minId = 0;
         result = twitter.search(query);
         for (Status tweet : result.getTweets()) {
+            //Get original tweet
+            while (tweet.getRetweetedStatus() != null) {
+                tweet = tweet.getRetweetedStatus();
+            }
             //Minimum number of retweets
             if (tweet.getRetweetCount() >= minRetweet) {
                 //Check if the tweet is duplicated
-                String text = tweet.getText();
                 //Remove URLs
-                text = tDao.cleanTweetText(text);
+                String text = tDao.cleanTweetText(tweet.getText());
                 if (!tDao.checkDuplicate(tweet.getId(), "tweets", text.hashCode())) {
                     //Saves the tweet in the database and adds it to the result list
                     tweets.add(tweet);

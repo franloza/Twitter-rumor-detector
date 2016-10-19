@@ -151,9 +151,9 @@ public class TwitterHandler {
                 List<ScoredTweet> scoredTF = crawler.getBestTweetsTF(query, crawled);
                 //Save to DB
                 for(ScoredTweet scoredTweet : scoredTFIDF)
-                    tDao.insertCrawledTweetTfIdf(scoredTweet.tweet.getStatus(),scoredTweet.score);
+                    tDao.insertCrawledTweetTfIdf(tweetID,scoredTweet.tweet.getStatus(),scoredTweet.score);
                 for(ScoredTweet scoredTweet : scoredTF)
-                    tDao.insertCrawledTweetTf(scoredTweet.tweet.getStatus(),scoredTweet.score);
+                    tDao.insertCrawledTweetTf(tweetID,scoredTweet.tweet.getStatus(),scoredTweet.score);
             } catch (Exception e) {
                 e.printStackTrace();
             }

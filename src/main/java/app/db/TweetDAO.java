@@ -31,12 +31,39 @@ public class TweetDAO {
         return insertTweet("tweets",s,-1);
     }
 
-    public boolean insertCrawledTweetTf (Status s,double score) {
-        return insertTweet("tweets_crawled_tf",s,score);
+    public boolean insertCrawledTweetTf (long crawledId,Status s,double score) {
+        return insertTweet("tweets_crawled_tf",crawledId,s,score);
     }
 
-    public boolean insertCrawledTweetTfIdf (Status s, double score) {
-        return insertTweet("tweets_crawled_tfidf",s,score);
+    public boolean insertCrawledTweetTfIdf (long crawledId,Status s, double score) {
+        return insertTweet("tweets_crawled_tfidf",crawledId,s,score);
+    }
+
+    private boolean insertTweet (String tableName, long crawledId, Status s, double score) {
+        String sql;
+
+            sql = "INSERT INTO " + tableName + " (crawledId,id,userId,userName,text,retweetCount,creationDate,favoriteCount,textHash,score) " +
+                    "VALUES (?,?,?,?,?,?,?,?,?,?)";
+
+        try(Connection con = ds.getConnection();
+            PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setLong(1,crawledId);
+            pst.setLong(2,s.getId());
+            pst.setLong(3,s.getUser().getId());
+            pst.setString(4,s.getUser().getScreenName());
+            String text =  this.cleanTweetText(s.getText());
+            pst.setString(5,text);
+            pst.setInt(6,s.getRetweetCount());
+            pst.setTimestamp(7,(new Timestamp(s.getCreatedAt().getTime())));
+            pst.setInt(8,s.getFavoriteCount());
+            pst.setInt(9,text.hashCode());
+            pst.setDouble (10,score);
+            pst.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            return false;
+        }
     }
 
     private boolean insertTweet (String tableName,Status s, double score) {

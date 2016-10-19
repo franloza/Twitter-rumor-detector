@@ -2,12 +2,17 @@ package app.twitter;
 
 import app.db.DataManager;
 import app.db.TweetDAO;
+import crawler.filter.ScoredTweet;
+import crawler.main.TwitterCrawler;
+import crawler.twitter.Tweet;
 import twitter4j.*;
 
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 /**
  * Class that handles all the interaction with the Twitter API
@@ -27,9 +32,25 @@ public class TwitterHandler {
 
     private QueryBuilder queryBuilder;
 
+    private Thread crawlerThread;
+    private TwitterCrawler crawler;
+    private BlockingQueue<Long> tweetsToCrawl;
+
     public TwitterHandler() {
         this.tDao = DataManager.getInstance().getTweetDao();
         this.queryBuilder = new QueryBuilder();
+
+        //Crawler
+        try {
+            this.crawler = new TwitterCrawler(TwitterCrawler.CREDENTIALS_FILE);
+        } catch (Exception e) {}
+        tweetsToCrawl = new ArrayBlockingQueue<>(100);
+        crawlerThread = new Thread() {
+            public void run() {
+                startCrawlingAsync();
+            }
+        };
+        crawlerThread.start();
     }
 
     public List<Status> getTweets() throws TwitterException {
@@ -106,7 +127,37 @@ public class TwitterHandler {
     }
 
     public boolean classifyTweet (long id, List<String> labels) {
+        int count = 0;
+        for(String label : labels)
+            if(label != null)
+                count++;
+        if(count==3)
+            tweetsToCrawl.offer(id);
         return tDao.setLabels(id,labels);
+    }
+
+    public void startCrawlingAsync() {
+        while(true) {
+            try {
+                //Fetch tweetID
+                long tweetID = tweetsToCrawl.take();
+                //Fetch the tweet
+                Tweet query = new Tweet(crawler.twitter.getTweetByTweetID(tweetID));
+                //Crawl tweets
+                List<Tweet> crawled = crawler.crawl(query);
+                //TFIDF
+                List<ScoredTweet> scoredTFIDF = crawler.getBestTweetsTFIDF(query, crawled);
+                //TF
+                List<ScoredTweet> scoredTF = crawler.getBestTweetsTF(query, crawled);
+                //Save to DB
+                for(ScoredTweet scoredTweet : scoredTFIDF)
+                    tDao.insertCrawledTweetTfIdf(scoredTweet.tweet.getStatus(),scoredTweet.score);
+                for(ScoredTweet scoredTweet : scoredTF)
+                    tDao.insertCrawledTweetTf(scoredTweet.tweet.getStatus(),scoredTweet.score);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public String getQuery() {

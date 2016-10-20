@@ -1,8 +1,7 @@
-package app;
-
 import app.controller.AnnotationController;
 import app.controller.IndexController;
 import app.controller.KeywordCrawlerController;
+import app.controller.RumorCrawlerController;
 import app.twitter.TwitterHandler;
 import app.util.Filters;
 import app.util.Path;
@@ -30,6 +29,7 @@ public class Application {
             TwitterHandler th = new TwitterHandler();
             AnnotationController.start(th);
             KeywordCrawlerController.start(th);
+            RumorCrawlerController.start(th);
 
             // Set up before-filters (called before each get/post)
             before("*",                  Filters.addTrailingSlashes);
@@ -39,6 +39,7 @@ public class Application {
             get(Path.Web.INDEX,          IndexController.servePage);
             get(Path.Web.ANNOTATION,     AnnotationController.servePage);
             get(Path.Web.KEYWORD_CRAWLER,KeywordCrawlerController.servePage);
+            get(Path.Web.RUMOR_CRAWLER,  RumorCrawlerController.servePage);
             post(Path.Web.ANNOTATION,    AnnotationController.processRequest);
             get("*",                     ViewUtil.notFound);
 

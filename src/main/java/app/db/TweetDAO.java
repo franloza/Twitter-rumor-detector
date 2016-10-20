@@ -1,6 +1,10 @@
 package app.db;
 
+import crawler.twitter.Tweet;
+import crawler.twitter.TwitterStatus;
+import crawler.twitter.TwitterUser;
 import twitter4j.Status;
+import twitter4j.User;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -377,23 +381,23 @@ public class TweetDAO {
         }
     }
 
-    public int countCrawled() {
-        return count("id","crawler");
+    public int countCrawled(String tableName) {
+        return count("id",tableName);
     }
 
     public List<String> getCrawledTweets() {
-        return getCrawledTweets(0);
+        return getCrawledTweets("crawler",0);
     }
 
-    public List<String> getCrawledTweets(int lastTweets) {
+    public List<String> getCrawledTweets(String tableName, int lastTweets) {
         String sql = null;
         if (lastTweets > 0) {
             sql = "SELECT text FROM (" +
-                    "SELECT * FROM crawler ORDER BY id DESC LIMIT " + lastTweets +
+                    "SELECT * FROM " + tableName +  " ORDER BY id DESC LIMIT " + lastTweets +
                     " ) sub " +
                     "ORDER BY id ASC";
         } else {
-            sql = "SELECT text FROM crawler";
+            sql = "SELECT text FROM " + tableName;
         }
         return getList(sql);
     }
@@ -478,5 +482,43 @@ public class TweetDAO {
             System.err.println(e.getMessage());
             return false;
         }
+    }
+
+    public long getLastCrawledTweetId(String tableName) {
+        String sql = "SELECT DISTINCT crawledId FROM " + tableName + " WHERE crawledDate IN (SELECT MAX(crawledDate) FROM " + tableName+ ") LIMIT 1";
+        try (Connection con = ds.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
+            ResultSet rs = pst.executeQuery();
+            if (rs.next()) {
+                return rs.getLong(1);
+            } else return 0;
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            return -1;
+        }
+
+    }
+
+    public List<Status> getCrawledTweetsById(String tableName, long crawledId) {
+        if(crawledId > 0) {}
+        String sql = (crawledId > 0)? "SELECT * FROM " + tableName + " WHERE crawledId = ?":"SELECT * FROM " + tableName;
+        List<Status> tweets = new ArrayList<>();
+        try(Connection con = ds.getConnection();
+            PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setLong(1,crawledId);
+            ResultSet rs = pst.executeQuery();
+            while (rs.next()) {
+                long id = rs.getLong("id");
+                User user = TwitterUser.create(rs.getLong("userId"), rs.getString("userName"));
+                String text = rs.getString("text");
+                Date createdAt = rs.getDate("creationDate");
+                int retweets = rs.getInt("retweetCount");
+                int favorites = rs.getInt("favoriteCount");
+                Tweet tweet = new Tweet(TwitterStatus.create(id,user,text,createdAt,retweets,favorites));
+                tweets.add(tweet.getStatus());
+            }
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
+        return tweets;
     }
 }

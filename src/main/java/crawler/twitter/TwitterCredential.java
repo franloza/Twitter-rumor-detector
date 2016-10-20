@@ -1,5 +1,7 @@
 package crawler.twitter;
 
+import org.nd4j.linalg.io.ClassPathResource;
+
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -66,7 +68,8 @@ public class TwitterCredential {
     public static TwitterCredential[] loadCredentialsFromFile(String filename) {
         TwitterCredential[] credentials = new TwitterCredential[0];
         try {
-            FileInputStream file = new FileInputStream(filename);
+            String path = new ClassPathResource(filename).getFile().getAbsolutePath();
+            FileInputStream file = new FileInputStream(path);
             credentials = loadCredentials(file);
             file.close();
         } catch (Exception e) {

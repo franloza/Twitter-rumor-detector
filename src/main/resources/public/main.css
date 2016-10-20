@@ -65,6 +65,17 @@ small {
     background-color: #E8FF00;
 }
 
+#rumorCrawlerLink:link,  #rumorCrawlerLink:visited  {
+    background-color: #07f469;
+    color: white;
+}
+
+#rumorCrawlerLink:hover,  #rumorCrawlerLink:active {
+    background-color: #05853a;
+}
+
+
+
 /*Tweet*/
 blockquote.twitter-tweet {
     display: inline-block;

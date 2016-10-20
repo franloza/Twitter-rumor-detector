@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author Franxi
+ * @author Fran Lozano
  */
 public class KeywordCrawlerController {
     private static KeywordCrawler kc;

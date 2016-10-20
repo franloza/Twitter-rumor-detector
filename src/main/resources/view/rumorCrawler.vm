@@ -1,0 +1,41 @@
+#parse("/view/layout.vm")
+#@mainLayout()
+<h1>$msg.get("RUMOR_CRAWLER_HEADING")</h1>
+<p>$msg.get("RUMOR_CRAWLER_DESCRIPTION")</p>
+<h3>$msg.get("RUMOR_CRAWLER_CRAWLED_TWEET")</h3>
+    <div class="tweet-list" id="crawledTweet">
+        <blockquote class="twitter-tweet">
+            <b> @$crawledTweet.getUser().getScreenName() </b>  - $crawledTweet.getText()) <br/>
+            <i class="fa fa-retweet" aria-hidden="true"></i> $crawledTweet.getRetweetCount() <br/>
+            <span class="creationDate">$crawledTweet.getCreatedAt()</span>
+        </blockquote>
+    </div>
+<h3>$msg.get("RUMOR_CRAWLER_RESULTS_TFIDF")</h3>
+    <ul class="tweet-list" id="tfIdfResults">
+        #foreach($tweet in $tfIdfTweets )
+            <li>
+                <blockquote class="twitter-tweet">
+                    <b> @$tweet.getUser().getScreenName() </b>  - $tweet.getText()) <br/>
+                    <i class="fa fa-retweet" aria-hidden="true"></i> $tweet.getRetweetCount() <br/>
+                    <span class="creationDate">$tweet.getCreatedAt()</span>
+                </blockquote>
+            </li>
+        #end
+    </ul>
+<h3>$msg.get("RUMOR_CRAWLER_RESULTS_TF")</h3>
+    <ul class="tweet-list" id="tfResults">
+        #foreach($tweet in $tfTweets )
+            <li>
+                <blockquote class="twitter-tweet">
+                    <b> @$tweet.getUser().getScreenName() </b>  - $tweet.getText()) <br/>
+                    <i class="fa fa-retweet" aria-hidden="true"></i> $tweet.getRetweetCount() <br/>
+                    <span class="creationDate">$tweet.getCreatedAt()</span>
+                </blockquote>
+            </li>
+        #end
+    </ul>
+    <div id="datasetInfo">
+        Number of tweets crawled: $nCrawled <br/>
+    </div>
+#end
+

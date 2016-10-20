@@ -81,14 +81,14 @@ public class KeywordCrawler {
 
     public List<String> getTweets(int lastTweets) {
         TweetDAO tDao = DataManager.getInstance().getTweetDao();
-        return tDao.getCrawledTweets (lastTweets);
+        return tDao.getCrawledTweets ("crawler",lastTweets);
     }
 
 
 
     public int countCrawled() {
         TweetDAO tDao = DataManager.getInstance().getTweetDao();
-        return tDao.countCrawled();
+        return tDao.countCrawled("crawler");
     }
 
     private class ThreadCrawler extends Thread {
@@ -124,7 +124,7 @@ public class KeywordCrawler {
                 tDao.insertCrawledTweet(id,text);
                 //System.out.println("Keyword Crawler: " + id + " - " + text);
                 //Check if the model has to be rebuilt in a new thread
-                if (tDao.countCrawled() % REFRESH_RATE == 0) {
+                if (tDao.countCrawled("crawler") % REFRESH_RATE == 0) {
                     new Thread() {
                         public void run() {
                             nn.createModel();

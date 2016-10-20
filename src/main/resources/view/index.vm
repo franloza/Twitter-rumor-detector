@@ -4,5 +4,6 @@
     <div id="index-button-bar">
         <p><a id="annotationLink" href="/annotation" > Annotation tool</a></p>
         <p><a id="keywordCrawlerLink" href="/keyword-crawler" > Keyword crawler</a></p>
+        <p><a id="rumorCrawlerLink" href="/rumor-crawler" > Rumor crawler</a></p>
     </div>
 #end

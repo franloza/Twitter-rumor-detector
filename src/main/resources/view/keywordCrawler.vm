@@ -1,6 +1,7 @@
 #parse("/view/layout.vm")
 #@mainLayout()
 <h1>$msg.get("KEYWORD_CRAWLER_HEADING")</h1>
+<p>$msg.get("KEYWORD_CRAWLER_DESCRIPTION")</p>
     <ul>
             #foreach($tweet in $tweets )
                 <li>

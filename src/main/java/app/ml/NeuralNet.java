@@ -40,7 +40,7 @@ public class NeuralNet {
         }else{
             //Create a new model
             HashSet<String> tweets;
-            if(tDao.countCrawled() > 0){
+            if(tDao.countCrawled("crawler") > 0){
                 createModel();
             } else {
                 //Load tweets from file

@@ -206,4 +206,26 @@ public class TwitterHandler {
     public void cleanUnclassified() {
         tDao.deleteOldestUnclassified(cacheUnclassified);
     }
+
+    public TwitterCrawler getTwitterCrawler() {
+        return crawler;
+    }
+
+    public Tweet getLastCrawledTweet() {
+        long id = tDao.getLastCrawledTweetId("tweets_crawled_tfidf");
+        if (id > 0) return new Tweet(crawler.twitter.getTweetByTweetID(id));
+        else return null;
+    }
+
+    public List<Status> getTfTweets(long crawledId) {
+        return tDao.getCrawledTweetsById("tweets_crawled_tf",crawledId);
+    }
+
+    public List<Status> getTfIdfTweets(long crawledId) {
+        return tDao.getCrawledTweetsById("tweets_crawled_tfidf",crawledId);
+    }
+
+    public int countCrawled() {
+        return tDao.countCrawled("tweets_crawled_tf") + tDao.countCrawled("tweets_crawled_tfidf");
+    }
 }

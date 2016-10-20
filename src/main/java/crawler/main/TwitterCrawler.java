@@ -127,9 +127,9 @@ public class TwitterCrawler {
         toCrawlResponse.put(tweet.getTextHash(),tweet);
         toCrawlUser.put(tweet.getTextHash(),tweet);
         while(result.size() + toCrawlResponse.size() + toCrawlUser.size() - 1 < FETCH_TWEETS) {
-            Console.out.println("ResultSize: " + lastResultSize);
+            Console.out.print("[Twitter Crawler]: Size of the last result : " + lastResultSize);
             //Fetch tweets from the same user
-            Console.out.println("toCrawlUser: " + toCrawlUser.size());
+            Console.out.println(" - Users to crawl: " + toCrawlUser.size());
             for (Integer key : toCrawlUser.keySet()) {
                 //Early exit
                 if(result.size() + toCrawlResponse.size() + toCrawlUser.size() - 1 >= FETCH_TWEETS) break;
@@ -142,7 +142,7 @@ public class TwitterCrawler {
             result.putAll(toCrawlUser);
             toCrawlUser.clear();
             //Fetch in-reply-to and response tweets
-            Console.out.println("toCrawlResponse: " + toCrawlResponse.size());
+            Console.out.println("[Twitter Crawler]: Size of in-reply-to and response tweets: " + toCrawlResponse.size());
             for (Integer key : toCrawlResponse.keySet()) {
                 //Early exit
                 if(result.size() + toCrawlResponse.size() + toCrawlUser.size() - 1 >= FETCH_TWEETS) break;
@@ -175,6 +175,7 @@ public class TwitterCrawler {
         result.remove(tweet.getTextHash());
         //Filter tweets
         resultList = Arrays.asList(result.values().toArray(new Tweet[0]));
+        Console.out.println("[Twitter Crawler]: Finished crawling process of tweet  " +tweet.getStatus().getId());
         return resultList;
     }
 

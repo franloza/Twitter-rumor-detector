@@ -42,6 +42,7 @@ CREATE TABLE tweets_crawled_tfidf
     userId BIGINT(20),
     text MEDIUMTEXT NOT NULL,
     textHash INT(11),
+    creationDate TIMESTAMP NOT NULL DEFAULT 0,
     favoriteCount INT(11),
     classified TINYINT(1) DEFAULT '0' NOT NULL,
     assertion TINYINT(1),
@@ -49,7 +50,6 @@ CREATE TABLE tweets_crawled_tfidf
     rumor TINYINT(1),
     retweetCount INT(11),
     score DOUBLE DEFAULT '0',
-    creationDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     crawledDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE tweets_crawled_tf
@@ -59,7 +59,7 @@ CREATE TABLE tweets_crawled_tf
     userName VARCHAR(150) NOT NULL,
     userId BIGINT(20),
     textHash INT(11),
-    creationDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    creationDate TIMESTAMP NOT NULL DEFAULT 0,
     favoriteCount INT(11),
     classified TINYINT(1) DEFAULT '0' NOT NULL,
     assertion TINYINT(1),

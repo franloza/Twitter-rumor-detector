@@ -2,6 +2,7 @@
 #@mainLayout()
 <h1>$msg.get("RUMOR_CRAWLER_HEADING")</h1>
 <p>$msg.get("RUMOR_CRAWLER_DESCRIPTION")</p>
+    #if ($crawledTweets)
 <h3>$msg.get("RUMOR_CRAWLER_CRAWLED_TWEET")</h3>
     <div class="tweet-list" id="crawledTweet">
         <blockquote class="twitter-tweet">
@@ -10,6 +11,7 @@
             <span class="creationDate">$crawledTweet.getCreatedAt()</span>
         </blockquote>
     </div>
+        #end
 <h3>$msg.get("RUMOR_CRAWLER_RESULTS_TFIDF")</h3>
     <ul class="tweet-list" id="tfIdfResults">
         #foreach($tweet in $tfIdfTweets )

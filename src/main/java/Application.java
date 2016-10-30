@@ -1,11 +1,6 @@
-import app.controller.AnnotationController;
-import app.controller.IndexController;
-import app.controller.KeywordCrawlerController;
-import app.controller.RumorCrawlerController;
+import app.controller.*;
 import app.twitter.TwitterHandler;
 import app.util.Filters;
-import app.util.Path;
-import app.util.ViewUtil;
 import twitter4j.TwitterException;
 
 import static spark.Spark.*;
@@ -30,20 +25,14 @@ public class Application {
             AnnotationController.start(th);
             KeywordCrawlerController.start(th);
             RumorCrawlerController.start(th);
+            BenchmarkController.start(th.getQueryBuilder());
 
             // Set up before-filters (called before each get/post)
             before("*",                  Filters.addTrailingSlashes);
             before("*",                  Filters.handleLocaleChange);
 
-            // Set up routes
-            get(Path.Web.INDEX,          IndexController.servePage);
-            get(Path.Web.ANNOTATION,     AnnotationController.servePage);
-            get(Path.Web.KEYWORD_CRAWLER,KeywordCrawlerController.servePage);
-            get(Path.Web.RUMOR_CRAWLER,  RumorCrawlerController.servePage);
-            post(Path.Web.ANNOTATION,    AnnotationController.processRequest);
-            get("*",                     ViewUtil.notFound);
-
-
+            //Set up routes
+            Router.setRoutes();
         }
 }
 

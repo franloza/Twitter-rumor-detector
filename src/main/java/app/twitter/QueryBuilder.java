@@ -3,6 +3,7 @@ package app.twitter;
 import app.db.DataManager;
 import app.ml.NeuralNet;
 import app.util.Pair;
+import org.apache.commons.lang.text.StrBuilder;
 import twitter4j.Query;
 
 import java.util.*;
@@ -30,7 +31,7 @@ public class QueryBuilder {
         Random rnd = new Random();
         StringBuilder sb = new StringBuilder();
         String keyword;
-        List<String> additionalWords = new ArrayList<String>();
+        List<String> additionalWords;
         int queryTerms = (int) Math.abs(Math.round(rnd.nextGaussian()*meanTerms+deviationTerms));
         keyword = DataManager.getInstance().getKeywords().next();
         sb.append(keyword);
@@ -45,8 +46,6 @@ public class QueryBuilder {
                     sb.append(" " + it.next());
             }
         }
-        //Print benchmark
-        this.printBenchmark();
         return new Query(sb.toString().trim());
     }
 
@@ -54,44 +53,93 @@ public class QueryBuilder {
         return this.nn;
     }
 
-    public void printBenchmark () {
+    public String getBenchmark () {
+        StrBuilder sb = new StrBuilder();
         String title = "QUERY BUILDER BENCHMARK";
-        System.out.println (title);
-        for (int i = 0; i < title.length();i++) System.out.print("=");
-        System.out.println();
+        sb.appendln (title);
+        for (int i = 0; i < title.length();i++) sb.append("=");
+        sb.append("\n");
 
         //Print parameters
-        System.out.println("Parameters:");
-        System.out.println("\tMean terms per query: " + meanTerms);
-        System.out.println("\tStandard deviation for additional terms: " + deviationTerms);
-        System.out.println("\tSimilar words retrieved for each keyword: " + similarWords + "\n");
+        sb.appendln("Parameters:");
+        sb.appendln("\tMean terms per query: " + meanTerms);
+        sb.appendln("\tStandard deviation for additional terms: " + deviationTerms);
+        sb.appendln("\tSimilar words retrieved for each keyword: " + similarWords + "\n");
 
         //Print keyword information
         int count = 1;
-        System.out.println("Keyword information:");
+        sb.appendln("Keyword information:");
         TreeSet<Pair<String, Double>> keywords = DataManager.getInstance().getKeywords().getElements();
         for (Pair<String,Double> keyword: keywords) {
             String keywordStr = keyword.getLeft();
-            System.out.println("\tKeyword #" + count + ": " + keywordStr);
-            System.out.println("\tWeight: " + keyword.getRight());
-            List<String> additionalWords = (List<String>) nn.getWordsNearest(keywordStr, similarWords);
-            System.out.println("\tTop " + similarWords + " similar words to " + keywordStr);
-            System.out.println("\t\tWord - Similarity");
-            System.out.println("\t\t=================");
-            for (String word: additionalWords) {
-                System.out.println("\t\t"+word + " - " + nn.similarity(keywordStr,word));
+            sb.appendln("\tKeyword #" + count + ": " + keywordStr);
+            sb.appendln(String.format("\tWeight: %.2f", keyword.getRight()));
+            List<String> additionalWords = nn.getWordsNearest(keywordStr, similarWords);
+            if(additionalWords.size()>0) {
+                sb.appendln("\tTop " + similarWords + " similar words to " + keywordStr);
+                sb.appendln("\t\tWord - Similarity");
+                sb.appendln("\t\t------------------");
+                for (String word : additionalWords) {
+                    Double similarity = nn.similarity(keywordStr, word);
+                    if (!similarity.isNaN()) sb.appendln(String.format("\t\t%s - %.5f", word, similarity));
+                }
+            } else {
+                sb.appendln("\tThere are not similar words to " + keywordStr);
             }
-            System.out.println();
+            sb.append("\n");
+            count++;
         }
 
         //Get stop words
         List<String> stopWords = nn.getStopWords();
         if(stopWords.size() > 0) {
-            System.out.println("Stop words:");
+            sb.appendln("Stop words:");
             for(String word: stopWords) {
-                System.out.println("\t"+word);
+                sb.appendln("\t"+word);
             }
         }
+
+        //Test queries
+        int NUM_QUERIES = 1000;
+        HashMap<String,Integer> map = new HashMap<>();
+        for (int i = 0;i < NUM_QUERIES; i++) {
+            String query = getQuery().getQuery();
+            if(map.containsKey(query)) map.put(query,map.get(query)+1);
+            else map.put(query,1);
+        }
+
+        //Make ranking
+        Comparator<Pair<String,Integer>> comp = (o1, o2) -> {
+            int comparison = o1.getRight().compareTo(o2.getRight());
+            if (comparison == 0) comparison = o1.getLeft().compareTo(o2.getLeft());
+            return comparison;
+        };
+        TreeSet<Pair<String,Integer>> ranking = new TreeSet<>(comp);
+        for (String query: map.keySet()){
+            ranking.add(new Pair<>(query, map.get(query)));
+        }
+        //Set maxiumum number in the ranking
+        int RANKING_QUERIES = 20;
+        //Print query
+        sb.appendln("Top " + RANKING_QUERIES + " queries:");
+        sb.appendln("\tQuery: Percentage of the total");
+        sb.appendln("\t----------------------");
+        Iterator<Pair<String, Integer>> iter = ranking.descendingIterator();
+        for (int i = 0; i < RANKING_QUERIES; i++) {
+            String query;
+            float percentage;
+            Pair<String,Integer> pair;
+            if(iter.hasNext()) {
+                pair = iter.next();
+                query = pair.getLeft();
+                percentage = ((float)pair.getRight() /NUM_QUERIES) * 100;
+                sb.appendln(String.format("\t%s - %.2f%%",query,percentage));
+            }
+
+        }
+
+
+        return sb.toString();
     }
 }
 

@@ -1,0 +1,8 @@
+#parse("/view/layout.vm")
+#@mainLayout()
+<h1>Benchmarks</h1>
+    <div id="links">
+        <a href="query-builder">Query Builder</a><br/>
+        <a href="/">Back</a>
+    </div>
+#end

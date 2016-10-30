@@ -47,6 +47,8 @@ small {
     padding: 0px 10px 10px;
 }
 
+/*Button Colors*/
+
 #annotationLink:link, #annotationLink:visited  {
     background-color: #f44336;
     color: white;
@@ -63,6 +65,15 @@ small {
 
 #keywordCrawlerLink:hover,  #keywordCrawlerLink:active {
     background-color: #E8FF00;
+}
+
+#benchmarksLink:link,  #benchmarksLink:visited  {
+    background-color: #4474f4;
+    color: white;
+}
+
+#benchmarksLink:hover,  #benchmarksLink:active {
+    background-color: #5552b3;
 }
 
 #rumorCrawlerLink:link,  #rumorCrawlerLink:visited  {
@@ -197,4 +208,9 @@ input:checked + .slider:before {
 
 #datasetInfo {
     padding:10px;
+}
+
+/*Footer*/
+footer {
+    padding: 20px 10px 10px 10px;
 }

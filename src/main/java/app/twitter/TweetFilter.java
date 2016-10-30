@@ -2,13 +2,10 @@ package app.twitter;
 
 import app.util.LanguageDetectionManager;
 import org.deeplearning4j.text.inputsanitation.InputHomogenization;
-import org.deeplearning4j.text.sentenceiterator.CollectionSentenceIterator;
-import org.deeplearning4j.text.sentenceiterator.SentenceIterator;
 import org.deeplearning4j.text.tokenization.tokenizer.preprocessor.CommonPreprocessor;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.regex.Pattern;
@@ -18,11 +15,6 @@ import java.util.regex.Pattern;
  * Class that contains some text processing functions for filtering tweets
  */
 public class TweetFilter {
-    static private int filtered = 0;
-
-    public static int getFiltered() {
-        return filtered;
-    }
 
     public static String basicFilter(String tweet) {
         //Remove URLs
@@ -34,19 +26,13 @@ public class TweetFilter {
 
     public static String filter(String tweet) {
 
-        ArrayList<String> collection = new ArrayList<>();
-        collection.add(tweet);
-        List<String> tokens;
-        SentenceIterator iter = new CollectionSentenceIterator(collection);
-        TokenizerFactory t = new DefaultTokenizerFactory();
-
-        List <String> filteredTokens;
         //Tokenize the tweets
+        TokenizerFactory t = new DefaultTokenizerFactory();
         t.setTokenPreProcessor(new CommonPreprocessor());
-        tokens = t.create(iter.nextSentence()).getTokens();
+        List<String>  tokens = t.create(tweet).getTokens();
 
         //First filter (Clean terms)
-        filteredTokens = cleanTerms(tokens);
+        List <String> filteredTokens = cleanTerms(tokens);
         if (filteredTokens.size() == 0){
             filtered++;
             return "";
@@ -96,20 +82,30 @@ public class TweetFilter {
         return filteredTweet;
     }
 
+    public static String filterWord (String token) {
 
-    public static List<String> tokenizeString(String string) {
-
-        ArrayList<String> collection = new ArrayList<String>();
-        collection.add(string);
-        List<String> tokens = null;
-
-        SentenceIterator iter = new CollectionSentenceIterator(collection);
-        TokenizerFactory t = new DefaultTokenizerFactory();
-        String filteredTweet;
-        //Tokenize the tweets
-        t.setTokenPreProcessor(new CommonPreprocessor());
-        tokens = t.create(iter.nextSentence()).getTokens();
-        return tokens;
+        token = new CommonPreprocessor().preProcess(token);
+        if(
+            //Empty word
+                token.trim().length() == 0 ||
+                        //URLs, user mentions and other characters
+                        Pattern.matches("(https?.*)|(@.*)|(—|\\.+|,+|…)",token)
+                ) {
+            return "";
+        }
+        //Remove incomplete words
+        else if (token.contains("..") || token.contains("...") || token.contains("…")) {
+            return "";
+        }
+        else {
+            //Remove some characters
+            String str = token.replaceAll("[\\[\\]\"“”‘’-]","");
+            str = str.replaceAll("[\\t\\n\\r]","");
+            str = str.replaceAll("&amp","");
+            str = str.replaceAll("[$__#@]","");
+            str = str.trim();
+            return str;
+        }
     }
 
     public static List<String> cleanTerms(List<String> tokens) {
@@ -144,29 +140,14 @@ public class TweetFilter {
         return tokens;
     }
 
-    public static String cleanTerm (String token) {
-        String str = token;
-        if(
-            //Empty word
-                token.trim().length() == 0 ||
-                        //URLs, user mentions and other characters
-                        Pattern.matches("(https?.*)|(@.*)|(—|\\.+|,+|…)",token)
-                ) {
-            return "";
-        }
-        //Remove incomplete words
-        else if (token.contains("..") || token.contains("...") || token.contains("…")) {
-            return "";
-        }
-        else {
-            //Remove some characters
-            str = token.replaceAll("[\\[\\]\"“”‘’-]","");
-            str = str.replaceAll("[\\t\\n\\r]","");
-            str = str.replaceAll("&amp","");
-            str = str.replaceAll("[$__#@]","");
-            str = str.trim();
-        }
-        return str;
+    static private int filtered = 0;
+
+    public static int getFiltered() {
+        return filtered;
+    }
+
+    public static void resetCounter() {
+        filtered = 0;
     }
 }
 

@@ -59,7 +59,6 @@
                     <mainClass>Application</mainClass>
                 </configuration>
             </plugin>
-
         </plugins>
     </build>
 
@@ -116,11 +115,6 @@
             <version>0.6.0</version>
         </dependency>
         <dependency>
-            <groupId>org.deeplearning4j</groupId>
-            <artifactId>deeplearning4j-nlp</artifactId>
-            <version>0.6.0</version>
-        </dependency>
-        <dependency>
             <groupId>org.nd4j</groupId>
             <artifactId>nd4j-native</artifactId>
             <version>0.6.0</version>
@@ -161,6 +155,16 @@
                     <artifactId>slf4j-log4j12</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.jazzy</groupId>
+            <artifactId>jazzy-core</artifactId>
+            <version>0.5.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.optimaize.languagedetector</groupId>
+            <artifactId>language-detector</artifactId>
+            <version>0.6</version>
         </dependency>
     </dependencies>
 </project>

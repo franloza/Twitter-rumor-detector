@@ -43,7 +43,10 @@ public class TwitterHandler {
         //Crawler
         try {
             this.crawler = new TwitterCrawler(TwitterCrawler.CREDENTIALS_FILE);
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            System.err.println("");
+            System.exit(0);
+        }
         tweetsToCrawl = new ArrayBlockingQueue<>(100);
         crawlerThread = new Thread() {
             public void run() {
@@ -51,6 +54,16 @@ public class TwitterHandler {
             }
         };
         crawlerThread.start();
+        //PONER ESTE CODIGO EN TWITTER HANDLER
+        //SALVAR TWEETS A CSV
+        /*
+        try {
+            FileOutputStream out = new FileOutputStream("tweets_unfiltered.csv");
+            ClassifiedTweet.writeToCSVWithLabels(tDao.getClassifiedTweets(false),out);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }*/
+
     }
 
     public List<Status> getTweets() throws TwitterException {
@@ -76,8 +89,7 @@ public class TwitterHandler {
             //Minimum number of retweets
             if (tweet.getRetweetCount() >= minRetweet) {
                 //Check if the tweet is duplicated
-                //Remove URLs
-                String text = tDao.cleanTweetText(tweet.getText());
+                String text = TweetFilter.basicFilter(tweet.getText());
                 if (!tDao.checkDuplicate(tweet.getId(), "tweets", text.hashCode())) {
                     //Saves the tweet in the database and adds it to the result list
                     tweets.add(tweet);

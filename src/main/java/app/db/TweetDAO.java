@@ -1,5 +1,7 @@
 package app.db;
 
+import app.twitter.ClassifiedTweet;
+import app.twitter.TweetFilter;
 import crawler.twitter.Tweet;
 import crawler.twitter.TwitterStatus;
 import crawler.twitter.TwitterUser;
@@ -55,7 +57,7 @@ public class TweetDAO {
             pst.setLong(2,s.getId());
             pst.setLong(3,s.getUser().getId());
             pst.setString(4,s.getUser().getScreenName());
-            String text =  this.cleanTweetText(s.getText());
+            String text =  TweetFilter.basicFilter(s.getText());
             pst.setString(5,text);
             pst.setInt(6,s.getRetweetCount());
             pst.setTimestamp(7,(new Timestamp(s.getCreatedAt().getTime())));
@@ -87,7 +89,7 @@ public class TweetDAO {
             pst.setLong(1,s.getId());
             pst.setLong(2,s.getUser().getId());
             pst.setString(3,s.getUser().getScreenName());
-            String text =  this.cleanTweetText(s.getText());
+            String text =  TweetFilter.basicFilter(s.getText());
             pst.setString(4,text);
             pst.setInt(5,s.getRetweetCount());
             pst.setTimestamp(6,(new Timestamp(s.getCreatedAt().getTime())));
@@ -402,14 +404,6 @@ public class TweetDAO {
         return getList(sql);
     }
 
-    public String cleanTweetText (String text) {
-        //Remove URLs
-        text = text.replaceAll("https?://\\S+\\s?", "");
-        //Remove mentions
-        text = text.replaceAll("RT +@[^ :]+:?", "");
-        return text;
-    }
-
     public long getMinId(String query) {
         String sql = "SELECT minTweetId FROM queries WHERE query=?";
         try(Connection con = ds.getConnection();
@@ -515,6 +509,33 @@ public class TweetDAO {
                 int favorites = rs.getInt("favoriteCount");
                 Tweet tweet = new Tweet(TwitterStatus.create(id,user,text,createdAt,retweets,favorites));
                 tweets.add(tweet.getStatus());
+            }
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
+        return tweets;
+    }
+
+    public List<ClassifiedTweet> getClassifiedTweets(boolean filtered) {
+
+        String sql = "SELECT * FROM tweets WHERE classified=1";
+        List<ClassifiedTweet> tweets = new ArrayList<>();
+        try(Connection con = ds.getConnection();
+            PreparedStatement pst = con.prepareStatement(sql)) {
+            ResultSet rs = pst.executeQuery();
+            while (rs.next()) {
+                long id = rs.getLong("id");
+                User user = TwitterUser.create(rs.getLong("userId"), rs.getString("userName"));
+                String text = (filtered)? TweetFilter.filter(rs.getString("text")):rs.getString("text");
+                Date createdAt = rs.getDate("creationDate");
+                int retweets = rs.getInt("retweetCount");
+                int favorites = rs.getInt("favoriteCount");
+                boolean assertion = rs.getBoolean("assertion");
+                boolean topic = rs.getBoolean("topic");
+                boolean rumor = rs.getBoolean("rumor");
+                ClassifiedTweet tweet = new ClassifiedTweet(TwitterStatus.create(id,user,text,createdAt,retweets,favorites)
+                        ,assertion,topic,rumor);
+                tweets.add(tweet);
             }
         } catch (SQLException e) {
             System.err.println(e.getMessage());

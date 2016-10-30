@@ -55,4 +55,8 @@ public class RandomCollection<E> {
         }
         set.addAll(subSet);
     }
+
+    public TreeSet<Pair<E,Double>> getElements () {
+        return this.set;
+    }
 }

@@ -2,6 +2,7 @@ package app.ml;
 
 import app.db.DataManager;
 import app.db.TweetDAO;
+import app.twitter.TweetFilter;
 import com.entopix.maui.filters.MauiFilter;
 import com.entopix.maui.main.MauiModelBuilder;
 import com.entopix.maui.main.MauiTopicExtractor;
@@ -23,7 +24,6 @@ import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.List;
 
-import static app.ml.NeuralNet.cleanTerms;
 
 /**
  * @author Mauro Allegretta
@@ -59,7 +59,7 @@ public class KeywordExtractor {
             PrintWriter writer = new PrintWriter(TWEET_PATH + "train.txt");
             while(iter.hasNext()) {
                 tokens = t.create(iter.nextSentence()).getTokens();
-                filteredTweet = cleanTerms(tokens);
+                filteredTweet = String.join(" ",TweetFilter.cleanTerms(tokens));
                 writer.println(filteredTweet);
                 //String tagged = tagger.tagString(filteredTweet);
                 //System.out.println(filteredTweet + " ---> " + tagged);
@@ -70,7 +70,7 @@ public class KeywordExtractor {
             writer = new PrintWriter(TEST_PATH + "test.txt");
             while(iter2.hasNext()) {
                 tokens = t.create(iter2.nextSentence()).getTokens();
-                filteredTweet = cleanTerms(tokens);
+                filteredTweet = String.join(" ",TweetFilter.cleanTerms(tokens));
                 writer.println(filteredTweet);
                 //String tagged = tagger.tagString(filteredTweet);
                 //System.out.println(filteredTweet + " ---> " + tagged);

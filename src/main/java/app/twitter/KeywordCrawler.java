@@ -29,7 +29,7 @@ public class KeywordCrawler {
     //Number of threads used for crawling
     private final int NUM_THREADS = 2;
     //Amount of tweets new collected before updating the model
-    private final int REFRESH_RATE = 100;
+    private final int REFRESH_RATE = 1000;
     //Query builder neural network
     private NeuralNet nn;
 
@@ -117,7 +117,7 @@ public class KeywordCrawler {
             JSONObject jsonObject = new JSONObject(msg);
             long id = jsonObject.getLong("id");
             String text = jsonObject.getString("text");
-            text = tDao.cleanTweetText(text);
+            text = TweetFilter.basicFilter(text);
 
             //Insert if is not duplicated
             if (!tDao.checkDuplicate(id,"crawler",text.hashCode()))

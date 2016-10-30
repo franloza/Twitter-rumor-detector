@@ -21,6 +21,8 @@ public class TweetFilter {
         tweet = tweet.replaceAll("https?://\\S+\\s?", "");
         //Remove mentions
         tweet = tweet.replaceAll("RT +@[^ :]+:?", "");
+        //Remove new lines and tabs
+        tweet = tweet.replaceAll("[\\t\\n\\r]","");
         return tweet;
     }
 

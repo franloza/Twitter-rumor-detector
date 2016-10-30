@@ -7,6 +7,8 @@ import crawler.main.TwitterCrawler;
 import crawler.twitter.Tweet;
 import twitter4j.*;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
@@ -54,15 +56,11 @@ public class TwitterHandler {
             }
         };
         crawlerThread.start();
-        //PONER ESTE CODIGO EN TWITTER HANDLER
-        //SALVAR TWEETS A CSV
-        /*
-        try {
-            FileOutputStream out = new FileOutputStream("tweets_unfiltered.csv");
-            ClassifiedTweet.writeToCSVWithLabels(tDao.getClassifiedTweets(false),out);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }*/
+
+        //Export to CSV
+        //classifiedToCSV(true); //Filtered
+        //classifiedToCSV(false); //Unfiltered
+
 
     }
 
@@ -239,5 +237,16 @@ public class TwitterHandler {
 
     public int countCrawled() {
         return tDao.countCrawled("tweets_crawled_tf") + tDao.countCrawled("tweets_crawled_tfidf");
+    }
+
+    private void classifiedToCSV(boolean filtered) {
+        String path = "src/main/resources/data/";
+        try {
+            if (filtered) path += "tweets_filtered.csv"; else path += "tweets_unfiltered.csv";
+            FileOutputStream out = new FileOutputStream(path);
+            ClassifiedTweet.writeToCSVWithLabels(tDao.getClassifiedTweets(filtered),out);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 }

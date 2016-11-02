@@ -1,4 +1,4 @@
-package app.util;
+package app.util.spark;
 
 import java.text.MessageFormat;
 import java.util.Locale;

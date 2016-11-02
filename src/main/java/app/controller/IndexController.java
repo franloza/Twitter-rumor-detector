@@ -1,7 +1,7 @@
 package app.controller;
 
-import app.util.Path;
-import app.util.ViewUtil;
+import app.util.spark.Path;
+import app.util.spark.ViewUtil;
 import spark.Request;
 import spark.Response;
 import spark.Route;

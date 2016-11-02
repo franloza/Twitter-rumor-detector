@@ -2,6 +2,7 @@ package app.util;
 
 /**
  * @author James Goodwill
+ * @author Fran Lozano
  */
 
 import com.google.common.base.Optional;

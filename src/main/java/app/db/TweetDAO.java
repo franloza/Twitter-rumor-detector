@@ -517,26 +517,33 @@ public class TweetDAO {
     }
 
     public List<ClassifiedTweet> getClassifiedTweets(boolean filtered) {
+        return getClassifiedTweets(filtered,false);
+    }
+
+    public List<ClassifiedTweet> getClassifiedTweets(boolean filtered, boolean onlyRumors) {
 
         String sql = "SELECT * FROM tweets WHERE classified=1";
+        if (onlyRumors) sql+= " AND rumor=1";
         List<ClassifiedTweet> tweets = new ArrayList<>();
         try(Connection con = ds.getConnection();
             PreparedStatement pst = con.prepareStatement(sql)) {
             ResultSet rs = pst.executeQuery();
             while (rs.next()) {
-                long id = rs.getLong("id");
-                User user = TwitterUser.create(rs.getLong("userId"), rs.getString("userName"));
                 String text = (filtered)? TweetFilter.filter(rs.getString("text")):
-                                          TweetFilter.basicFilter(rs.getString("text"));
-                Date createdAt = rs.getDate("creationDate");
-                int retweets = rs.getInt("retweetCount");
-                int favorites = rs.getInt("favoriteCount");
-                boolean assertion = rs.getBoolean("assertion");
-                boolean topic = rs.getBoolean("topic");
-                boolean rumor = rs.getBoolean("rumor");
-                ClassifiedTweet tweet = new ClassifiedTweet(TwitterStatus.create(id,user,text,createdAt,retweets,favorites)
-                        ,assertion,topic,rumor);
-                tweets.add(tweet);
+                        TweetFilter.basicFilter(rs.getString("text"));
+                if(!text.isEmpty()) {
+                    long id = rs.getLong("id");
+                    User user = TwitterUser.create(rs.getLong("userId"), rs.getString("userName"));
+                    Date createdAt = rs.getDate("creationDate");
+                    int retweets = rs.getInt("retweetCount");
+                    int favorites = rs.getInt("favoriteCount");
+                    boolean assertion = rs.getBoolean("assertion");
+                    boolean topic = rs.getBoolean("topic");
+                    boolean rumor = rs.getBoolean("rumor");
+                    ClassifiedTweet tweet = new ClassifiedTweet(TwitterStatus.create(id, user, text, createdAt, retweets, favorites)
+                            , assertion, topic, rumor);
+                    tweets.add(tweet);
+                }
             }
         } catch (SQLException e) {
             System.err.println(e.getMessage());

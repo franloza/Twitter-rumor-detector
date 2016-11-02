@@ -1,8 +1,8 @@
 package app.controller;
 
 import app.twitter.TwitterHandler;
-import app.util.Path;
-import app.util.ViewUtil;
+import app.util.spark.Path;
+import app.util.spark.ViewUtil;
 import crawler.twitter.Tweet;
 import spark.Request;
 import spark.Response;

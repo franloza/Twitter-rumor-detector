@@ -1,6 +1,6 @@
 import app.controller.*;
 import app.twitter.TwitterHandler;
-import app.util.Filters;
+import app.util.spark.Filters;
 import twitter4j.TwitterException;
 
 import static spark.Spark.*;

@@ -1,4 +1,4 @@
-package app.util;
+package app.util.spark;
 
 import org.apache.velocity.app.VelocityEngine;
 import org.eclipse.jetty.http.HttpStatus;
@@ -11,24 +11,21 @@ import spark.template.velocity.VelocityTemplateEngine;
 import java.util.HashMap;
 import java.util.Map;
 
-import static app.util.RequestUtil.getSessionCurrentUser;
-import static app.util.RequestUtil.getSessionLocale;
-
 public class ViewUtil {
 
     // Renders a template given a model and a request
     // The request is needed to check the user session for language settings
     // and to see if the user is logged in
     public static String render(Request request, Map<String, Object> model, String templatePath) {
-        model.put("msg", new MessageBundle(getSessionLocale(request)));
-        model.put("currentUser", getSessionCurrentUser(request));
+        model.put("msg", new MessageBundle(RequestUtil.getSessionLocale(request)));
+        model.put("currentUser", RequestUtil.getSessionCurrentUser(request));
         model.put("WebPath", Path.Web.class); // Access application URLs from templates
         return strictVelocityEngine().render(new ModelAndView(model, templatePath));
     }
 
     public static Route notAcceptable = (Request request, Response response) -> {
         response.status(HttpStatus.NOT_ACCEPTABLE_406);
-        return new MessageBundle(getSessionLocale(request)).get("ERROR_406_NOT_ACCEPTABLE");
+        return new MessageBundle(RequestUtil.getSessionLocale(request)).get("ERROR_406_NOT_ACCEPTABLE");
     };
 
     public static Route notFound = (Request request, Response response) -> {

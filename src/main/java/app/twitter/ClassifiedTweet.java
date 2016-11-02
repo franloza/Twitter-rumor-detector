@@ -75,6 +75,22 @@ public class ClassifiedTweet extends crawler.twitter.Tweet {
                     +";"+status.getFavoriteCount()+";"+status.getText().hashCode()
                     +";"+tweet.isAssertion()+";"+tweet.isTopic()+";"+tweet.isRumor());
         }
+        print.close();
+    }
+
+    /**
+     * Writes tweet's texts of the provided classified tweets into the provided OutputStream
+     *
+     * @param tweets List of tweets to write to the TXT
+     * @param out OutputStream in which to write the TXT
+     */
+    public static void writeToFile(List<ClassifiedTweet> tweets, OutputStream out) {
+        PrintStream print = new PrintStream(out);
+        for(ClassifiedTweet tweet : tweets) {
+            Status status = tweet.getStatus();
+            print.println(status.getText());
+        }
+        print.close();
     }
 
     //Getters

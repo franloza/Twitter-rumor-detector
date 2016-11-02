@@ -49,7 +49,7 @@ public class NeuralNet {
                 createModel();
             } else {
                 //Load tweets from file
-                trainModel("/data/rumorTweets.txt");
+                trainModel("/data/docs/rumorTweets.txt");
                 //Save the model in a file
                 this.save();
             }

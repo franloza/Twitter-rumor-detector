@@ -57,10 +57,10 @@ public class TwitterHandler {
         };
         crawlerThread.start();
 
-        //Export to CSV
+        //Export tweets to CSV and TXT
         //classifiedToCSV(true); //Filtered
         //classifiedToCSV(false); //Unfiltered
-
+        rumorsToTXT(true); //Filtered
 
     }
 
@@ -240,11 +240,36 @@ public class TwitterHandler {
     }
 
     private void classifiedToCSV(boolean filtered) {
-        String path = "src/main/resources/data/";
+        System.out.println("Exporting classified tweets to CSV file...");
+        String path = "src/main/resources/data/docs/";
         try {
             if (filtered) path += "tweets_filtered.csv"; else path += "tweets_unfiltered.csv";
             FileOutputStream out = new FileOutputStream(path);
             ClassifiedTweet.writeToCSVWithLabels(tDao.getClassifiedTweets(filtered),out);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void classifiedToTXT(boolean filtered) {
+        System.out.println("Exporting classified tweets to TXT file...");
+        String path = "src/main/resources/data/docs/";
+        try {
+            if (filtered) path += "tweets_filtered.txt"; else path += "tweets_unfiltered.txt";
+            FileOutputStream out = new FileOutputStream(path);
+            ClassifiedTweet.writeToFile(tDao.getClassifiedTweets(filtered),out);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void rumorsToTXT(boolean filtered) {
+        System.out.println("Exporting rumors to TXT file...");
+        String path = "src/main/resources/data/docs/";
+        try {
+            if (filtered) path += "rumors_filtered.txt"; else path += "rumors_unfiltered.txt";
+            FileOutputStream out = new FileOutputStream(path);
+            ClassifiedTweet.writeToFile(tDao.getClassifiedTweets(filtered,true),out);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

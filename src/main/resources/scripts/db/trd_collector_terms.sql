@@ -1,0 +1,15 @@
+INSERT INTO trd.collector_terms (terms) VALUES ('9/11');
+INSERT INTO trd.collector_terms (terms) VALUES ('September 11th bombs');
+INSERT INTO trd.collector_terms (terms) VALUES ('September 11th detonation');
+INSERT INTO trd.collector_terms (terms) VALUES ('inside job');
+INSERT INTO trd.collector_terms (terms) VALUES ('twin towers conspiracy');
+INSERT INTO trd.collector_terms (terms) VALUES ('World Trade Center');
+INSERT INTO trd.collector_terms (terms) VALUES ('Twin Towers');
+INSERT INTO trd.collector_terms (terms) VALUES ('911 attacks');
+INSERT INTO trd.collector_terms (terms) VALUES ('twin towers detonation');
+INSERT INTO trd.collector_terms (terms) VALUES ('twin towers fbi');
+INSERT INTO trd.collector_terms (terms) VALUES ('world trade center fbi');
+INSERT INTO trd.collector_terms (terms) VALUES ('trump world trade center');
+INSERT INTO trd.collector_terms (terms) VALUES ('trump twin towers');
+INSERT INTO trd.collector_terms (terms) VALUES ('hillary twin towers');
+INSERT INTO trd.collector_terms (terms) VALUES ('9/11 conspiracy');

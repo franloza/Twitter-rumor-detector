@@ -181,12 +181,12 @@ public class TwitterHandler {
      *
      */
     public void extractKeywords () {
+        //Update list of rumor tweets
+        rumorsToTXT(true);
+
         KeywordExtractor ke = new KeywordExtractorAdapter();
         List<String> extractedKeywords = ke.getKeywords();
         List<String> keywords = tDao.getKeywordsList();
-
-        //Update list of rumor tweets
-        rumorsToTXT(true);
 
         for (String extracted: extractedKeywords ) {
             boolean exists = false;

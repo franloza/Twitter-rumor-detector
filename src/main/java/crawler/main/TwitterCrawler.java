@@ -22,13 +22,13 @@ public class TwitterCrawler {
 
     //TFIDF
     public static final double MAX_SCORE_TFIDF = 1.0;
-    public static final double MIN_SCORE_TFIDF = 0.7;
+    public static final double MIN_SCORE_TFIDF = 0.8;
     public static final int MIN_TERMS_TFIDF = 5;
     public static final int MIN_TERM_SIZE_TFIDF = 2;
 
     //TF
     public static final double MAX_SCORE_TF = Double.MAX_VALUE;
-    public static final double MIN_SCORE_TF = 4.0;
+    public static final double MIN_SCORE_TF = 6.0;
     public static final int MIN_TERMS_TF = 5;
     public static final int MIN_TERM_SIZE_TF = 2;
 

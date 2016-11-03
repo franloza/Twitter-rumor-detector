@@ -43,11 +43,6 @@ public class KeywordExtractorAdapter implements KeywordExtractor {
         return keywords;
     }
 
-    public static void main(String[] args) {
-        KeywordExtractor ke = new KeywordExtractorAdapter();
-        ke.getKeywords();
-    }
-
     private HashMap<String, Float> readKeywords() {
         Process p = null;
         try {

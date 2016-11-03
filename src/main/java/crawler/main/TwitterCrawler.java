@@ -21,14 +21,12 @@ public class TwitterCrawler {
     public static final int FETCH_TWEETS = 10000;
 
     //TFIDF
-    public static final double MAX_SCORE_TFIDF = 1.0;
-    public static final double MIN_SCORE_TFIDF = 0.8;
+    public static final double MIN_SCORE_TFIDF = 0.25;
     public static final int MIN_TERMS_TFIDF = 5;
     public static final int MIN_TERM_SIZE_TFIDF = 2;
 
     //TF
-    public static final double MAX_SCORE_TF = Double.MAX_VALUE;
-    public static final double MIN_SCORE_TF = 6.0;
+    public static final double MIN_SCORE_TF = 0.25;
     public static final int MIN_TERMS_TF = 5;
     public static final int MIN_TERM_SIZE_TF = 2;
 
@@ -61,9 +59,9 @@ public class TwitterCrawler {
 
     public void start2() {
         try {
-            FileOutputStream out = new FileOutputStream("786237498036858880_filtered.csv");
-            List<ScoredTweet> filtered = getBestTweetsTFIDF(new Tweet(twitter.getTweetByTweetID(786237498036858880L))
-                    ,Tweet.readFromCSV("786237498036858880.csv"));
+            FileOutputStream out = new FileOutputStream("794148256037109760_Take2.csv");
+            List<ScoredTweet> filtered = getBestTweetsTFIDF(new Tweet(twitter.getTweetByTweetID(794148256037109760L))
+                    ,Tweet.readFromCSV("794148256037109760_TFIDF.csv"));
             ScoredTweet.writeToCSV(filtered, out);
             out.close();
         } catch(Exception e) {
@@ -127,9 +125,9 @@ public class TwitterCrawler {
         toCrawlResponse.put(tweet.getTextHash(),tweet);
         toCrawlUser.put(tweet.getTextHash(),tweet);
         while(result.size() + toCrawlResponse.size() + toCrawlUser.size() - 1 < FETCH_TWEETS) {
-            Console.out.print("[Twitter Crawler]: Size of the last result : " + lastResultSize);
+            Console.out.print("[Twitter Crawler]: Total crawled tweets : " + lastResultSize);
             //Fetch tweets from the same user
-            Console.out.println(" - Users to crawl: " + toCrawlUser.size());
+            Console.out.println("[Twitter Crawler]: Size of same user tweets: " + toCrawlResponse.size());
             for (Integer key : toCrawlUser.keySet()) {
                 //Early exit
                 if(result.size() + toCrawlResponse.size() + toCrawlUser.size() - 1 >= FETCH_TWEETS) break;
@@ -175,7 +173,6 @@ public class TwitterCrawler {
         result.remove(tweet.getTextHash());
         //Filter tweets
         resultList = Arrays.asList(result.values().toArray(new Tweet[0]));
-        Console.out.println("[Twitter Crawler]: Finished crawling process of tweet  " +tweet.getStatus().getId());
         return resultList;
     }
 
@@ -186,19 +183,18 @@ public class TwitterCrawler {
      * @param tweets The documents to score
      * @param mode Scoring mode
      * @param minScore Minimum score needed for a document to show in result
-     * @param maxScore Maximum score needed for a document to show in result
      * @param minTerms Minimum number of terms a document needs in order to show in result
      * @param minTermSize Minimum number of characters a term must have to count in the score
      * @return The tweets that best match the query with their corresponding score
      */
     public List<ScoredTweet> getBestTweets(Tweet query, List<Tweet> tweets, TfidfFilter.ScoringMode mode
-            , double minScore, double maxScore, int minTerms, int minTermSize) {
+            , double minScore, int minTerms, int minTermSize) {
         TfidfFilter filter = new TfidfFilter(mode
                 , new PorterStemmer(), minTerms, minTermSize);
         List<ScoredTweet> scored = filter.getScores(query, tweets);
         List<ScoredTweet> filtered = new ArrayList<>();
         for(ScoredTweet scoredTweet : scored)
-            if(scoredTweet.score > minScore && scoredTweet.score < maxScore)
+            if(scoredTweet.score >= minScore)
                 filtered.add(scoredTweet);
         return filtered;
     }
@@ -212,7 +208,7 @@ public class TwitterCrawler {
      */
     public List<ScoredTweet> getBestTweetsTFIDF(Tweet query, List<Tweet> tweets) {
         return getBestTweets(query, tweets, TfidfFilter.ScoringMode.TFIDF
-                , MIN_SCORE_TFIDF, MAX_SCORE_TFIDF, MIN_TERMS_TFIDF, MIN_TERM_SIZE_TFIDF);
+                , MIN_SCORE_TFIDF, MIN_TERMS_TFIDF, MIN_TERM_SIZE_TFIDF);
     }
 
     /**
@@ -224,7 +220,7 @@ public class TwitterCrawler {
      */
     public List<ScoredTweet> getBestTweetsTF(Tweet query, List<Tweet> tweets) {
         return getBestTweets(query, tweets, TfidfFilter.ScoringMode.TF
-                , MIN_SCORE_TF, MAX_SCORE_TF, MIN_TERMS_TF, MIN_TERM_SIZE_TF);
+                , MIN_SCORE_TF, MIN_TERMS_TF, MIN_TERM_SIZE_TF);
     }
 
 }

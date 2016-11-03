@@ -12,6 +12,7 @@ import com.twitter.hbc.core.endpoint.StatusesFilterEndpoint;
 import com.twitter.hbc.core.processor.StringDelimitedProcessor;
 import com.twitter.hbc.httpclient.auth.Authentication;
 import com.twitter.hbc.httpclient.auth.OAuth1;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -115,13 +116,14 @@ public class KeywordCrawler {
                 e.printStackTrace();
             }
             JSONObject jsonObject = new JSONObject(msg);
-            long id = jsonObject.getLong("id");
-            String text = jsonObject.getString("text");
-            text = TweetFilter.basicFilter(text);
+            try {
+                long id = jsonObject.getLong("id");
+                String text = jsonObject.getString("text");
+                text = TweetFilter.basicFilter(text);
 
-            //Insert if is not duplicated
-            if (!tDao.checkDuplicate(id,"crawler",text.hashCode()))
-                tDao.insertCrawledTweet(id,text);
+                //Insert if is not duplicated
+                if (!tDao.checkDuplicate(id, "crawler", text.hashCode()))
+                    tDao.insertCrawledTweet(id, text);
                 //System.out.println("Keyword Crawler: " + id + " - " + text);
                 //Check if the model has to be rebuilt in a new thread
                 if (tDao.countCrawled("crawler") % REFRESH_RATE == 0) {
@@ -131,6 +133,7 @@ public class KeywordCrawler {
                         }
                     }.run();
                 }
+            } catch (JSONException e){}
         }
         hosebirdClient.stop();
     }

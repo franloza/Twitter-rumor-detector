@@ -52,6 +52,7 @@ public class AnnotationController {
         Pattern pattern = Pattern.compile("#\\w*");
         long id;
         int i = 1;
+        boolean rumorFound = false;
         //Classify tweets
         String strId = request.queryParams("id_"+i);
         while  (strId != null && !strId.equals("")) {
@@ -65,6 +66,7 @@ public class AnnotationController {
                 //Update the weights for the keyword(s)
                 if (request.queryParams("rumor_" + (i)) != null) {
                     th.updateKeywordsWeight(id);
+                    rumorFound = true;
                 }
             } catch (NumberFormatException e) {
                 System.err.println(e.getMessage());
@@ -75,6 +77,9 @@ public class AnnotationController {
 
         //Delete non classified if the limit was reached
         th.cleanUnclassified();
+
+        //Extract keywords if new rumors have been classified
+        th.extractKeywords();
 
         //Render new page
         try {

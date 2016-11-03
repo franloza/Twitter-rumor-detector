@@ -2,6 +2,8 @@ package app.twitter;
 
 import app.db.DataManager;
 import app.db.TweetDAO;
+import app.ml.KeywordExtractor;
+import app.ml.KeywordExtractorAdapter;
 import crawler.filter.ScoredTweet;
 import crawler.main.TwitterCrawler;
 import crawler.twitter.Tweet;
@@ -27,7 +29,7 @@ public class TwitterHandler {
     private static int tweetsPerPage = 20;
     //Amount of keyword weight that is increased each tweet is classified as rumor
     private static double deltaWeight = 0.01;
-    private static long cacheUnclassified = 100; //Number of unclassified examples allowed before it's deleted
+    private static long cacheUnclassified = 100; //Number of unclassified examples allowed before they're deleted
 
     private TweetDAO tDao;
     private String currentQuery;
@@ -59,8 +61,9 @@ public class TwitterHandler {
 
         //Export tweets to CSV and TXT
         //classifiedToCSV(true); //Filtered
-        //classifiedToCSV(false); //Unfiltered
-        rumorsToTXT(true); //Filtered
+
+        //Extract keywords
+        extractKeywords();
 
     }
 
@@ -70,12 +73,9 @@ public class TwitterHandler {
           The factory instance is re-useable and thread safe.*/
         Twitter twitter = new TwitterFactory().getInstance();
         List<Status> tweets = new LinkedList<>();
-        Query query = null;
         int usedResults = 0;
-        if (query == null) {
-            query = buildQuery();
-            this.currentQuery = query.getQuery();
-        }
+        Query query = buildQuery();
+        this.currentQuery = query.getQuery();
         QueryResult result;
         long minId = 0;
         result = twitter.search(query);
@@ -184,6 +184,33 @@ public class TwitterHandler {
                 DataManager.getInstance().getKeywords().update(s,deltaWeight);
             }
         }
+    }
+
+    /**
+     * Function that uses Keyword Extractor component to get keywords from the tweets classified as rumors
+     *
+     */
+    public void extractKeywords () {
+        KeywordExtractor ke = new KeywordExtractorAdapter();
+        List<String> extractedKeywords = ke.getKeywords();
+        List<String> keywords = tDao.getKeywordsList();
+
+        //Update list of rumor tweets
+        rumorsToTXT(true);
+
+        for (String extracted: extractedKeywords ) {
+            boolean exists = false;
+            for (String current: keywords ) {
+                if (current.contains(extracted)) exists = true;
+            }
+            if (!exists) {
+                System.out.println("Extracted new keyword: {" + extracted + "}");
+                DataManager.getInstance().getKeywords().add(extracted, 1);
+                //Update database
+                updateWeight(extracted, 1);
+            }
+        }
+
     }
 
     public int countClassified() {

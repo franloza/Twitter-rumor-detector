@@ -27,7 +27,7 @@ public class RandomCollection<E> {
         this.random = random;
     }
 
-    private void add(E result,double weight) {
+    public void add(E result,double weight) {
         if (weight <= 0) return;
         total += weight;
         set.add(new Pair<E,Double>(result,weight));

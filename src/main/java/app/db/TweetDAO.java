@@ -239,12 +239,21 @@ public class TweetDAO {
             pst.setString(1,keyword);
             ResultSet rs = pst.executeQuery();
             if (rs.next()) {
+                PreparedStatement pst2;
                 //The keyword is already in the data base
-                if (rs.getInt(1) > 0 ) sql = "UPDATE keywords SET weight=weight + ? WHERE keyword=?";
-                else sql = "INSERT INTO keywords VALUES(?,1 + deltaWeight)";
-                PreparedStatement pst2 = con.prepareStatement(sql);
-                pst2.setDouble(1,deltaWeight);
-                pst2.setString(2,keyword);
+                if (rs.getInt(1) > 0 ) {
+
+                    sql = "UPDATE keywords SET weight=weight + ? WHERE keyword=?";
+                    pst2 = con.prepareStatement(sql);
+                    pst2.setDouble(1,deltaWeight);
+                    pst2.setString(2,keyword);
+                }
+                else{
+                    sql = "INSERT INTO keywords VALUES(?,?)";
+                    pst2 = con.prepareStatement(sql);
+                    pst2.setString(1,keyword);
+                    pst2.setDouble(2,deltaWeight);
+                }
                 if (pst2.executeUpdate() < 1) return false;
             }
             else return false;
@@ -550,4 +559,6 @@ public class TweetDAO {
         }
         return tweets;
     }
+
+
 }

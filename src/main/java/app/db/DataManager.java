@@ -15,12 +15,13 @@ import java.sql.SQLException;
 public class DataManager {
 
     private TweetDAO tweetDao;
+    private CollectorDAO collectorDao;
     private RandomCollection<String> keywords;
 
     private static DataManager instance;
 
     private DataManager() {
-        if(this.tweetDao == null) {
+        if(this.tweetDao == null || this.collectorDao == null) {
             DataSource dataSource = configureDatabase();
             try {
                 //Test connection
@@ -32,6 +33,7 @@ public class DataManager {
                 System.exit(0);
             }
             this.tweetDao = new TweetDAO(dataSource);
+            this.collectorDao = new CollectorDAO(dataSource);
         }
         if(this.keywords == null) this.keywords = new RandomCollection<>(tweetDao.getKeywords());
     }
@@ -43,6 +45,8 @@ public class DataManager {
     public TweetDAO getTweetDao() {
         return tweetDao;
     }
+
+    public CollectorDAO getCollectorDAO() { return this.collectorDao;}
 
     public RandomCollection<String> getKeywords() {
         return keywords;

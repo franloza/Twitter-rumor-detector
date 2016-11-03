@@ -1,7 +1,7 @@
 package app.ml;
 
+import app.db.CollectorDAO;
 import app.db.DataManager;
-import app.db.TweetDAO;
 import app.twitter.TweetFilter;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
@@ -37,7 +37,7 @@ public class NeuralNet {
 
     public NeuralNet() {
         File f = new File(modelPath);
-        TweetDAO tDao = DataManager.getInstance().getTweetDao();
+        CollectorDAO cDao = DataManager.getInstance().getCollectorDAO();
 
         if(f.exists() && !f.isDirectory()) {
                 //Load model from binary file
@@ -45,7 +45,7 @@ public class NeuralNet {
         }else{
             //Create a new model
             HashSet<String> tweets;
-            if(tDao.countCrawled("crawler") > 0){
+            if(cDao.countTweets() > 0){
                 createModel();
             } else {
                 //Load tweets from file
@@ -146,8 +146,8 @@ public class NeuralNet {
 
     private List<String> loadTweets() {
         System.out.println("Loading & vectorizing crawled tweets...");
-        TweetDAO tDao = DataManager.getInstance().getTweetDao();
-        return tDao.getCrawledTweets();
+        CollectorDAO cDao = DataManager.getInstance().getCollectorDAO();
+        return cDao.getTweets();
     }
 
     private void trainModel(String path) {

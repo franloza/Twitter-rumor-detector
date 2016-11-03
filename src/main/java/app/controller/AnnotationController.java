@@ -79,7 +79,7 @@ public class AnnotationController {
         th.cleanUnclassified();
 
         //Extract keywords if new rumors have been classified
-        th.extractKeywords();
+        if(rumorFound)th.extractKeywords();
 
         //Render new page
         try {

@@ -15,41 +15,30 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-
 /**
- * Data Access Object in charge of tweet persistence
+ * Class in charge of managing access to tables that store keywords
+ * classified tweets, crawled tweets and queries
  * @author Fran Lozano
  */
-public class TweetDAO {
+public class TweetDAO extends GenericDAO {
 
-    private DataSource ds;
+    //Table names
+    private final String TWEET_TABLE = "tweets";
+    private final String CRAWLED_TF_TABLE = "tweets_crawled_tf";
+    private final String CRAWLED_TFIDF_TABLE = "tweets_crawled_tfidf";
+    private final String KEYWORD_TABLE = "keywords";
+    private final String QUERY_TABLE = "queries";
 
     public TweetDAO(DataSource ds) {
-        this.ds = ds;
+        super(ds);
     }
 
-    /**
-     * Function that insert a new tweet in the database and set it as unclassified
-     * @param s Tweet information
-     * @return false if there was an error
-     */
-    public boolean insertTweet (Status s) {
-        return insertTweet("tweets",s,-1);
-    }
-
-    public boolean insertCrawledTweetTf (long crawledId,Status s,double score) {
-        return insertTweet("tweets_crawled_tf",crawledId,s,score);
-    }
-
-    public boolean insertCrawledTweetTfIdf (long crawledId,Status s, double score) {
-        return insertTweet("tweets_crawled_tfidf",crawledId,s,score);
-    }
-
+    //Generic Tweet methods
     private boolean insertTweet (String tableName, long crawledId, Status s, double score) {
         String sql;
 
-            sql = "INSERT INTO " + tableName + " (crawledId,id,userId,userName,text,retweetCount,creationDate,favoriteCount,textHash,score) " +
-                    "VALUES (?,?,?,?,?,?,?,?,?,?)";
+        sql = "INSERT INTO " + tableName + " (crawledId,id,userId,userName,text,retweetCount,creationDate,favoriteCount,textHash,score) " +
+                "VALUES (?,?,?,?,?,?,?,?,?,?)";
 
         try(Connection con = ds.getConnection();
             PreparedStatement pst = con.prepareStatement(sql)) {
@@ -104,29 +93,70 @@ public class TweetDAO {
         }
     }
 
-    public boolean insertCrawledTweet(long id, String text) {
-        String sql = "INSERT INTO crawler (id,text,textHash) VALUES (?,?,?)";
+    /**
+     * Function that checks if an id exists in a given table table
+     * @param id id to search
+     * @param tableName name of the table
+     * @return true if it exists
+     */
+    private boolean checkID(long id, String tableName) {
+        String sql = "SELECT COUNT(id) FROM " + tableName + " WHERE id=?";
         try(Connection con = ds.getConnection();
             PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setLong(1,id);
-            pst.setString(2,text);
-            pst.setInt(3,text.hashCode());
-            pst.executeUpdate();
-            return true;
+            ResultSet rs = pst.executeQuery();
+            if (rs.next()) {
+                if (rs.getInt(1) == 0) return false;
+                else return true;
+            }
+            return false;
+
         } catch (SQLException e) {
             System.err.println(e.getMessage());
             return false;
         }
     }
 
+    private int countTrues(String columnName,String tableName){
+        String sql = "SELECT COUNT(?) FROM " + tableName + " WHERE "+ columnName + "=1";
+        return getCounts(sql,columnName);
+    }
+
+    //Classified Tweets methods
     /**
+     * Function that insert a new tweet in the database and set it as unclassified
+     * @param s Tweet information
+     * @return false if there was an error
+     */
+    public boolean insertTweet (Status s) {
+        return insertTweet(TWEET_TABLE,s,-1);
+    }
+
+    public String getTweet(long tweetId) {
+        String sql = "SELECT text FROM " + TWEET_TABLE + " WHERE id=?";
+        try(Connection con = ds.getConnection();
+            PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setLong(1,tweetId);
+            ResultSet rs = pst.executeQuery();
+            if (rs.next()) {
+                return rs.getString(1);
+            }
+            return "";
+
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            return "";
+        }
+    }
+
+   /**
      * Function that set the labels for a certain tweet and set it as classified
      * @param id Tweet ID
      * @param labels List of labels to set to 1 in the database
      * @return false if there was an error
      */
     public boolean setLabels(long id, List<String> labels) {
-        String sql = "UPDATE tweets SET classified=1,assertion=?,topic=?,rumor=? WHERE id=?";
+        String sql = "UPDATE " + TWEET_TABLE + " SET classified=1,assertion=?,topic=?,rumor=? WHERE id=?";
         try(Connection con = ds.getConnection();
             PreparedStatement pst = con.prepareStatement(sql)) {
             Iterator it = labels.iterator();
@@ -163,60 +193,27 @@ public class TweetDAO {
         }
     }
 
-    /**
-     * Function that checks if an id exists in the database
-     * @param id
-     * @return true if it exists
-     */
-    public boolean checkID(long id) {
-        String sql = "SELECT COUNT(id) FROM tweets WHERE id=?";
-        try(Connection con = ds.getConnection();
-            PreparedStatement pst = con.prepareStatement(sql)) {
-            pst.setLong(1,id);
-            ResultSet rs = pst.executeQuery();
-            if (rs.next()) {
-                if (rs.getInt(1) == 0) return false;
-                else return true;
-            }
-            return false;
-
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return false;
-        }
+    public boolean checkTweetID (long id){
+        return checkID(id,TWEET_TABLE);
     }
 
     /**
-     * Function that checks if an id exists in the database or the content belongs already to a tweet
-     * @param id
-     * @return true if it exists
+     * Function that returns a dictionary ("user" : rumor_tweets) that stores the amount of tweets classified
+     * as rumors for each user
+     * @return Map of users containing at least one tweet classified as rumor.
      */
-    public boolean checkDuplicate(long id, String tableName, int textHash) {
-        String sql = "SELECT COUNT(id) FROM " + tableName + " WHERE id=? OR textHash=?";
-        try(Connection con = ds.getConnection();
-            PreparedStatement pst = con.prepareStatement(sql)) {
-            pst.setLong(1,id);
-            pst.setInt(2,textHash);
-            ResultSet rs = pst.executeQuery();
-            if (rs.next()) {
-                if (rs.getInt(1) > 0) return true;
-                else return false;
-            }
-            return false;
-
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return false;
-        }
+    public HashMap<String,Integer> getRumorUsers () {
+        String sql = "SELECT user,count(rumor) FROM tweets WHERE rumor=1";
+        return getMap(sql);
     }
 
     /**
      * Function that checks if an existing tweet is set as classified in the database
-     * @param id
+     * @param id Tweet id
      * @return true if it has been classified
      */
     public boolean checkClassified(long id) {
-        String sql = "SELECT classified FROM tweets WHERE id=?";
+        String sql = "SELECT classified FROM "+ TWEET_TABLE + " WHERE id=?";
         try(Connection con = ds.getConnection();
             PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setLong(1,id);
@@ -232,44 +229,12 @@ public class TweetDAO {
         }
     }
 
-    public boolean updateWeight(String keyword, double deltaWeight) {
-        String sql = "SELECT COUNT(keyword) FROM keywords WHERE keyword=?";
-        try(Connection con = ds.getConnection();
-            PreparedStatement pst = con.prepareStatement(sql)) {
-            pst.setString(1,keyword);
-            ResultSet rs = pst.executeQuery();
-            if (rs.next()) {
-                PreparedStatement pst2;
-                //The keyword is already in the data base
-                if (rs.getInt(1) > 0 ) {
-
-                    sql = "UPDATE keywords SET weight=weight + ? WHERE keyword=?";
-                    pst2 = con.prepareStatement(sql);
-                    pst2.setDouble(1,deltaWeight);
-                    pst2.setString(2,keyword);
-                }
-                else{
-                    sql = "INSERT INTO keywords VALUES(?,?)";
-                    pst2 = con.prepareStatement(sql);
-                    pst2.setString(1,keyword);
-                    pst2.setDouble(2,deltaWeight);
-                }
-                if (pst2.executeUpdate() < 1) return false;
-            }
-            else return false;
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return false;
-        }
-        return true;
-        }
-
     /**
      * Function that returns the amount of tweets classified as rumors
      * @return Number of tweets labeled as rumors.
      */
     public int countRumor () {
-        return countTrues("rumor","tweets");
+        return countTrues("rumor",TWEET_TABLE);
     }
 
     /**
@@ -277,162 +242,15 @@ public class TweetDAO {
      * @return Number of tweets labeled as rumors.
      */
     public int countClassified () {
-        return countTrues("classified","tweets");
-    }
-
-    private int countTrues(String columnName,String tableName){
-        String sql = "SELECT COUNT(?) FROM " + tableName + " WHERE "+ columnName + "=1";
-        return getCounts(sql,columnName);
-        }
-
-    private int count(String columnName,String tableName){
-        String sql = "SELECT COUNT(?) FROM " + tableName;
-        return getCounts(sql,columnName);
-        }
-
-        private int getCounts (String sql, String columnName) {
-            try (Connection con = ds.getConnection();
-                 PreparedStatement pst = con.prepareStatement(sql)) {
-                pst.setString(1, columnName);
-                ResultSet rs = pst.executeQuery();
-                if (rs.next()) {
-                    return rs.getInt(1);
-                } else return 0;
-            } catch (SQLException e) {
-                System.err.println(e.getMessage());
-                return -1;
-            }
-        }
-
-    /**
-     * Function that returns a dictionary ("user" : rumor_tweets) that stores the amount of tweets classified
-     * as rumors for each user
-     * @return Map of users containing at least one tweet classified as rumor.
-     */
-    public HashMap<String,Integer> getRumorUsers () {
-        String sql = "SELECT user,count(rumor) FROM tweets WHERE rumor=1";
-        return getMap(sql);
-    }
-
-    /**
-     * Function that returns a dictionary ("keyword" : weight) that stores a keyword and a weight associated
-     * to it
-     * @return Map of keywords and weights
-     */
-    public HashMap<String,Double> getKeywords () {
-        String sql = "SELECT keyword,weight FROM keywords";
-        HashMap<String, Double> map = new HashMap<>();
-        try (Connection con = ds.getConnection();
-             PreparedStatement pst = con.prepareStatement(sql)) {
-            ResultSet rs = pst.executeQuery();
-            while (rs.next()) {
-                map.put(rs.getString(1), rs.getDouble(2));
-            }
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
-        }
-        return map;
-    }
-
-    /**
-     * Generic method that returns a map with a string key and an integer value using a certain query
-     * @return Map recovered from the database.
-     */
-    private HashMap<String,Integer> getMap (String sql) {
-        HashMap<String, Integer> map = new HashMap<>();
-        try (Connection con = ds.getConnection();
-             PreparedStatement pst = con.prepareStatement(sql)) {
-            ResultSet rs = pst.executeQuery();
-            while (rs.next()) {
-                map.put(rs.getString(1), rs.getInt(2));
-            }
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
-        }
-        return map;
-    }
-
-    /**
-     * Generic method that returns a list of strings using a certain query
-     * @return List recovered from the database.
-     */
-    private List<String> getList (String sql) {
-        List<String> list = new ArrayList<>();
-        try (Connection con = ds.getConnection();
-             PreparedStatement pst = con.prepareStatement(sql)) {
-            ResultSet rs = pst.executeQuery();
-            while (rs.next()) {
-                list.add(rs.getString(1));
-            }
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
-        }
-        return list;
-    }
-
-    public List<String> getKeywordsList() {
-        String sql = "SELECT keyword from keywords";
-        return this.getList(sql);
-    }
-
-    public String getTweet(long tweetId) {
-        String sql = "SELECT text FROM tweets WHERE id=?";
-        try(Connection con = ds.getConnection();
-            PreparedStatement pst = con.prepareStatement(sql)) {
-            pst.setLong(1,tweetId);
-            ResultSet rs = pst.executeQuery();
-            if (rs.next()) {
-                return rs.getString(1);
-            }
-            return "";
-
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return "";
-        }
-    }
-
-    public int countCrawled(String tableName) {
-        return count("id",tableName);
-    }
-
-    public List<String> getCrawledTweets() {
-        return getCrawledTweets("crawler",0);
-    }
-
-    public List<String> getCrawledTweets(String tableName, int lastTweets) {
-        String sql = null;
-        if (lastTweets > 0) {
-            sql = "SELECT text FROM (" +
-                    "SELECT * FROM " + tableName +  " ORDER BY id DESC LIMIT " + lastTweets +
-                    " ) sub " +
-                    "ORDER BY id ASC";
-        } else {
-            sql = "SELECT text FROM " + tableName;
-        }
-        return getList(sql);
-    }
-
-    public long getMinId(String query) {
-        String sql = "SELECT minTweetId FROM queries WHERE query=?";
-        try(Connection con = ds.getConnection();
-            PreparedStatement pst = con.prepareStatement(sql)) {
-            pst.setString(1,query);
-            ResultSet rs = pst.executeQuery();
-            if (rs.next()) {
-               return rs.getLong(1);
-            }
-            else return 0;
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return 0;
-        }
+        return countTrues("classified",TWEET_TABLE);
     }
 
     public void deleteOldestUnclassified(long cacheUnclassified) {
-        String sql = "DELETE FROM tweets WHERE id NOT IN (\n" +
-                "  SELECT id FROM (" +
-                "    SELECT id FROM tweets WHERE classified=0 ORDER BY id ASC LIMIT ?) sub) AND classified=0;";
+        StringBuilder sb = new StringBuilder();
+        sb.append("DELETE FROM " + TWEET_TABLE + " WHERE id NOT IN (");
+        sb.append("  SELECT id FROM (");
+        sb.append("SELECT id FROM " + TWEET_TABLE + " WHERE classified=0 ORDER BY id ASC LIMIT ?) sub) AND classified=0;");
+        String sql =  sb.toString();
         try(Connection con = ds.getConnection();
             PreparedStatement pst = con.prepareStatement(sql)) {
             pst.setLong(1,cacheUnclassified);
@@ -442,96 +260,13 @@ public class TweetDAO {
         }
     }
 
-    public boolean updateQuery(String query, long minId, int count) {
-        String sql = "SELECT COUNT(query) FROM queries WHERE query=?";
-        try(Connection con = ds.getConnection();
-            PreparedStatement pst = con.prepareStatement(sql)) {
-            pst.setString(1,query);
-            ResultSet rs = pst.executeQuery();
-            if (rs.next()) {
-                //The keyword is already in the data base
-                PreparedStatement pst2;
-                if (rs.getInt(1) > 0 ) {
-                    sql = "UPDATE queries SET minTweetId=?, counter = counter + ? WHERE query=?";
-                    pst2 = con.prepareStatement(sql);
-                    pst2.setLong(1,minId);
-                    pst2.setInt(2,count);
-                    pst2.setString(3,query);
-                }
-                else {
-                    sql = "INSERT INTO queries (minTweetId,query,counter) VALUES(?,?,?)";
-                    pst2 = con.prepareStatement(sql);
-                    pst2.setLong(1,minId);
-                    pst2.setString(2,query);
-                    pst2.setInt(3,count);
-                }
-                if (pst2.executeUpdate() < 1) return false;
-            }
-            else return false;
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return false;
-        }
-        return true;
-    }
-
-    public boolean resetQueryTweetId (String query) {
-        String sql = "UPDATE queries SET minTweetId=0 WHERE query=?";
-        try(Connection con = ds.getConnection();
-            PreparedStatement pst = con.prepareStatement(sql)) {
-            pst.setString(1,query);
-            return (pst.executeUpdate() >0);
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return false;
-        }
-    }
-
-    public long getLastCrawledTweetId(String tableName) {
-        String sql = "SELECT DISTINCT crawledId FROM " + tableName + " WHERE crawledDate IN (SELECT MAX(crawledDate) FROM " + tableName+ ") LIMIT 1";
-        try (Connection con = ds.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
-            ResultSet rs = pst.executeQuery();
-            if (rs.next()) {
-                return rs.getLong(1);
-            } else return 0;
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            return -1;
-        }
-
-    }
-
-    public List<Status> getCrawledTweetsById(String tableName, long crawledId) {
-        if(crawledId > 0) {}
-        String sql = (crawledId > 0)? "SELECT * FROM " + tableName + " WHERE crawledId = ?":"SELECT * FROM " + tableName;
-        List<Status> tweets = new ArrayList<>();
-        try(Connection con = ds.getConnection();
-            PreparedStatement pst = con.prepareStatement(sql)) {
-            pst.setLong(1,crawledId);
-            ResultSet rs = pst.executeQuery();
-            while (rs.next()) {
-                long id = rs.getLong("id");
-                User user = TwitterUser.create(rs.getLong("userId"), rs.getString("userName"));
-                String text = rs.getString("text");
-                Date createdAt = rs.getDate("creationDate");
-                int retweets = rs.getInt("retweetCount");
-                int favorites = rs.getInt("favoriteCount");
-                Tweet tweet = new Tweet(TwitterStatus.create(id,user,text,createdAt,retweets,favorites));
-                tweets.add(tweet.getStatus());
-            }
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
-        }
-        return tweets;
-    }
-
     public List<ClassifiedTweet> getClassifiedTweets(boolean filtered) {
         return getClassifiedTweets(filtered,false);
     }
 
     public List<ClassifiedTweet> getClassifiedTweets(boolean filtered, boolean onlyRumors) {
 
-        String sql = "SELECT * FROM tweets WHERE classified=1";
+        String sql = "SELECT * FROM " +  TWEET_TABLE + " WHERE classified=1";
         if (onlyRumors) sql+= " AND rumor=1";
         List<ClassifiedTweet> tweets = new ArrayList<>();
         try(Connection con = ds.getConnection();
@@ -560,5 +295,174 @@ public class TweetDAO {
         return tweets;
     }
 
+    public boolean checkDuplicate(long id, int textHash) {
+        return checkDuplicate(id,TWEET_TABLE,textHash);
+    }
+
+    //Crawled Tweets methods
+
+    public boolean insertCrawledTweetTf (long crawledId,Status s,double score) {
+        return insertTweet(CRAWLED_TF_TABLE,crawledId,s,score);
+    }
+
+    public boolean insertCrawledTweetTfIdf (long crawledId,Status s, double score) {
+        return insertTweet(CRAWLED_TFIDF_TABLE,crawledId,s,score);
+    }
+
+    public long getLastCrawledTweetId(String type) {
+        String tableName;
+        if (type.equals ("tf")) tableName = CRAWLED_TF_TABLE;
+        else tableName = CRAWLED_TFIDF_TABLE;
+        String sql = "SELECT DISTINCT crawledId FROM " + tableName + " WHERE crawledDate IN (SELECT MAX(crawledDate) FROM " + tableName+ ") LIMIT 1";
+        try (Connection con = ds.getConnection(); PreparedStatement pst = con.prepareStatement(sql)) {
+            ResultSet rs = pst.executeQuery();
+            if (rs.next()) {
+                return rs.getLong(1);
+            } else return 0;
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            return -1;
+        }
+    }
+
+    public List<Status> getCrawledTweetsById(String type, long crawledId) {
+        String tableName = (type.equals("tf"))? CRAWLED_TF_TABLE:CRAWLED_TFIDF_TABLE;
+        if(crawledId > 0) {}
+        String sql = (crawledId > 0)? "SELECT * FROM " + tableName + " WHERE crawledId = ?":"SELECT * FROM " + tableName;
+        List<Status> tweets = new ArrayList<>();
+        try(Connection con = ds.getConnection();
+            PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setLong(1,crawledId);
+            ResultSet rs = pst.executeQuery();
+            while (rs.next()) {
+                long id = rs.getLong("id");
+                User user = TwitterUser.create(rs.getLong("userId"), rs.getString("userName"));
+                String text = rs.getString("text");
+                Date createdAt = rs.getDate("creationDate");
+                int retweets = rs.getInt("retweetCount");
+                int favorites = rs.getInt("favoriteCount");
+                Tweet tweet = new Tweet(TwitterStatus.create(id,user,text,createdAt,retweets,favorites));
+                tweets.add(tweet.getStatus());
+            }
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
+        return tweets;
+    }
+
+    public int countCrawled(String type) {
+        String tableName = (type.equals("tf"))? CRAWLED_TF_TABLE:CRAWLED_TFIDF_TABLE;
+        return count(tableName);
+    }
+
+    //Keyword methods
+
+    public boolean updateWeight(String keyword, double deltaWeight) {
+        String sql = "SELECT COUNT(keyword) FROM "+ KEYWORD_TABLE + " WHERE keyword=?";
+        try(Connection con = ds.getConnection();
+            PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setString(1,keyword);
+            ResultSet rs = pst.executeQuery();
+            if (rs.next()) {
+                PreparedStatement pst2;
+                //The keyword is already in the data base
+                if (rs.getInt(1) > 0 ) {
+
+                    sql = "UPDATE keywords SET weight=weight + ? WHERE keyword=?";
+                    pst2 = con.prepareStatement(sql);
+                    pst2.setDouble(1,deltaWeight);
+                    pst2.setString(2,keyword);
+                }
+                else{
+                    sql = "INSERT INTO "+ KEYWORD_TABLE + " VALUES(?,?)";
+                    pst2 = con.prepareStatement(sql);
+                    pst2.setString(1,keyword);
+                    pst2.setDouble(2,deltaWeight);
+                }
+                if (pst2.executeUpdate() < 1) return false;
+            }
+            else return false;
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            return false;
+        }
+        return true;
+        }
+
+    /**
+     * Function that returns a dictionary ("keyword" : weight) that stores a keyword and a weight associated
+     * to it
+     * @return Map of keywords and weights
+     */
+    public HashMap<String,Double> getKeywords () {
+        String sql = "SELECT keyword,weight FROM " + KEYWORD_TABLE;
+        HashMap<String, Double> map = new HashMap<>();
+        try (Connection con = ds.getConnection();
+             PreparedStatement pst = con.prepareStatement(sql)) {
+            ResultSet rs = pst.executeQuery();
+            while (rs.next()) {
+                map.put(rs.getString(1), rs.getDouble(2));
+            }
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+        }
+        return map;
+    }
+
+    public List<String> getKeywordsList() {
+        String sql = "SELECT keyword from keywords";
+        return getList(sql);
+    }
+
+    //Query methods
+
+    public long getMinId(String query) {
+        String sql = "SELECT minTweetId FROM " + QUERY_TABLE + " WHERE query=?";
+        try(Connection con = ds.getConnection();
+            PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setString(1,query);
+            ResultSet rs = pst.executeQuery();
+            if (rs.next()) {
+               return rs.getLong(1);
+            }
+            else return 0;
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            return 0;
+        }
+    }
+
+    public boolean updateQuery(String query, long minId, int count) {
+        String sql = "SELECT COUNT(query) FROM " + QUERY_TABLE + " WHERE query=?";
+        try(Connection con = ds.getConnection();
+            PreparedStatement pst = con.prepareStatement(sql)) {
+            pst.setString(1,query);
+            ResultSet rs = pst.executeQuery();
+            if (rs.next()) {
+                //The keyword is already in the data base
+                PreparedStatement pst2;
+                if (rs.getInt(1) > 0 ) {
+                    sql = "UPDATE  " + QUERY_TABLE + " SET minTweetId=?, counter = counter + ? WHERE query=?";
+                    pst2 = con.prepareStatement(sql);
+                    pst2.setLong(1,minId);
+                    pst2.setInt(2,count);
+                    pst2.setString(3,query);
+                }
+                else {
+                    sql = "INSERT INTO  " + QUERY_TABLE +  " (minTweetId,query,counter) VALUES(?,?,?)";
+                    pst2 = con.prepareStatement(sql);
+                    pst2.setLong(1,minId);
+                    pst2.setString(2,query);
+                    pst2.setInt(3,count);
+                }
+                if (pst2.executeUpdate() < 1) return false;
+            }
+            else return false;
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            return false;
+        }
+        return true;
+    }
 
 }

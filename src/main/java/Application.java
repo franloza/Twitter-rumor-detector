@@ -23,7 +23,7 @@ public class Application {
             //Initialize controllers
             TwitterHandler th = new TwitterHandler();
             AnnotationController.start(th);
-            KeywordCrawlerController.start(th);
+            TweetCollectorController.start(th);
             RumorCrawlerController.start(th);
             BenchmarkController.start(th.getQueryBuilder());
 

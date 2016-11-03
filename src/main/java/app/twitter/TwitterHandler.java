@@ -88,7 +88,7 @@ public class TwitterHandler {
             if (tweet.getRetweetCount() >= minRetweet) {
                 //Check if the tweet is duplicated
                 String text = TweetFilter.basicFilter(tweet.getText());
-                if (!tDao.checkDuplicate(tweet.getId(), "tweets", text.hashCode())) {
+                if (!tDao.checkDuplicate(tweet.getId(), text.hashCode())) {
                     //Saves the tweet in the database and adds it to the result list
                     tweets.add(tweet);
                     saveTweet(tweet);
@@ -115,21 +115,11 @@ public class TwitterHandler {
         query.setCount(tweetsPerPage*5);
         long id = tDao.getMinId(currentQuery);
         if (id != 0) query.setMaxId(id-1);
-        /*
-        String year = getRandomYear();
-        query.setSince(getSince(year));
-        query.setUntil(getUntil(year));*/
         return query;
     }
 
     private void saveTweet(Status tweet) {
         tDao.insertTweet(tweet);
-    }
-
-    private void saveTweets(List<Status> tweets) {
-        for(Status tweet:tweets) {
-            tDao.insertTweet(tweet);
-        }
     }
 
     private boolean updateWeight(String keyword,double deltaWeight) {
@@ -249,21 +239,21 @@ public class TwitterHandler {
     }
 
     public Tweet getLastCrawledTweet() {
-        long id = tDao.getLastCrawledTweetId("tweets_crawled_tfidf");
+        long id = tDao.getLastCrawledTweetId("tf");
         if (id > 0) return new Tweet(crawler.twitter.getTweetByTweetID(id));
         else return null;
     }
 
     public List<Status> getTfTweets(long crawledId) {
-        return tDao.getCrawledTweetsById("tweets_crawled_tf",crawledId);
+        return tDao.getCrawledTweetsById("tf",crawledId);
     }
 
     public List<Status> getTfIdfTweets(long crawledId) {
-        return tDao.getCrawledTweetsById("tweets_crawled_tfidf",crawledId);
+        return tDao.getCrawledTweetsById("tfidf",crawledId);
     }
 
     public int countCrawled() {
-        return tDao.countCrawled("tweets_crawled_tf") + tDao.countCrawled("tweets_crawled_tfidf");
+        return tDao.countCrawled("tf") + tDao.countCrawled("idf");
     }
 
     private void classifiedToCSV(boolean filtered) {

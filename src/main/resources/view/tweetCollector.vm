@@ -1,0 +1,17 @@
+#parse("/view/layout.vm")
+#@mainLayout()
+<h1>$msg.get("TWEET_COLLECTOR_HEADING")</h1>
+<p>$msg.get("TWEET_COLLECTOR_DESCRIPTION")</p>
+    <ul>
+            #foreach($tweet in $tweets )
+                <li>
+                    <blockquote class="twitter-tweet">$tweet</blockquote>
+                </li>
+            #end
+    </ul>
+    <div id="datasetInfo">
+        Number of tweets collected: $nClassified <br/>
+    </div>
+<script src="/tweetCollector.js"></script>
+#end
+

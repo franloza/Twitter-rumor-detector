@@ -1,6 +1,6 @@
 #parse("/view/layout.vm")
 #@mainLayout()
-<h1>$msg.get("TWITTER_ERROR_HEAD")</h1>
-<p>$error</p>
+<h1>$!msg.get("TWITTER_ERROR_HEAD")</h1>
+<p>$!error</p>
 <a href="annotation.vm">Come back</a>
 #end

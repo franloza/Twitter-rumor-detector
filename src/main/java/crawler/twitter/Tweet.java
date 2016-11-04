@@ -88,7 +88,6 @@ public class Tweet {
      */
     public static void writeToCSV(List<Tweet> tweets, OutputStream out) {
         PrintStream print = new PrintStream(out);
-        print.println("id;userId;userName;text;creationDate;retweetCount;favoriteCount;textHash");
         for(Tweet tweet : tweets) {
             Status status = tweet.getStatus();
             print.println(status.getId()+";"+status.getUser().getId()+";"

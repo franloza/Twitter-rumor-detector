@@ -19,15 +19,17 @@ import java.util.List;
  */
 public class ScoredTweet implements Comparable<ScoredTweet> {
     public Tweet tweet;
+    public long crawledId;
     public double score;
 
-    public ScoredTweet(Tweet tweet, double score) {
+    public ScoredTweet(Tweet tweet, long crawledId, double score) {
         this.tweet = tweet;
+        this.crawledId = crawledId;
         this.score = score;
     }
 
-    public ScoredTweet(Tweet tweet) {
-        this(tweet, 0.0);
+    public ScoredTweet(Tweet tweet, long crawledId) {
+        this(tweet, crawledId, 0.0);
     }
 
     /**
@@ -38,13 +40,13 @@ public class ScoredTweet implements Comparable<ScoredTweet> {
      */
     public static void writeToCSV(List<ScoredTweet> tweets, OutputStream out) {
         PrintStream print = new PrintStream(out);
-        print.println("id;userId;userName;text;creationDate;retweetCount;favoriteCount;textHash;score");
         for(ScoredTweet tweet : tweets) {
             Status status = tweet.tweet.getStatus();
             print.println(status.getId()+";"+status.getUser().getId()+";"
                     +Tweet.toCSVString(status.getUser().getScreenName())+";"+Tweet.toCSVString(status.getText())
                     +";"+new Timestamp(status.getCreatedAt().getTime())+";"+status.getRetweetCount()
-                    +";"+status.getFavoriteCount()+";"+status.getText().hashCode()+";"+tweet.score);
+                    +";"+status.getFavoriteCount()+";"+status.getText().hashCode()
+                    +";"+tweet.crawledId + ";" + tweet.score);
         }
     }
 
@@ -67,7 +69,7 @@ public class ScoredTweet implements Comparable<ScoredTweet> {
                                     ,new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.0").parse(row[4])
                                     ,Integer.valueOf(row[5]),Integer.valueOf(row[6]))
                     );
-                    tweets.add(new ScoredTweet(tweet,Double.valueOf(row[7])));
+                    tweets.add(new ScoredTweet(tweet,Long.valueOf(row[7]),Double.valueOf(row[8])));
                 } catch (Exception e1) {}
             }
         } catch (Exception e) {

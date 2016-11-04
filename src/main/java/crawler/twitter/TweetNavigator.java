@@ -62,7 +62,8 @@ public class TweetNavigator {
      */
     public static boolean shouldSwitchCredentials(int code) {
         if(code == HttpResponseCode.TOO_MANY_REQUESTS || code == HttpResponseCode.UNAUTHORIZED
-                ||code == HttpResponseCode.ENHANCE_YOUR_CLAIM)
+                ||code == HttpResponseCode.ENHANCE_YOUR_CLAIM ||code == HttpResponseCode.BAD_REQUEST
+                ||code == HttpResponseCode.UNAUTHORIZED)
             return true;
         else
             return false;
@@ -95,10 +96,10 @@ public class TweetNavigator {
         while(credential.remainingSeconds()>0) {
             //Switch to next credential
             credential = credentials[(++credentialIndex)%credentials.length];
-            Console.out.println("[Twitter Crawler]: Switching to credential " + credentialIndex%credentials.length);
+            Console.out.println("[Crawler]: Switching to credential " + credentialIndex%credentials.length);
             if(credentialIndex%credentials.length == 0) {
                 //When we get back to the first credential, wait until we can use it
-                Console.out.println("[Twitter Crawler]: First credential : Sleeping for " + credential.remainingSeconds() + " seconds");
+                Console.out.println("[Crawler]: First credential : Sleeping for " + credential.remainingSeconds() + " seconds");
                 try {
                     Thread.sleep(credential.remainingSeconds()*1200);
                 } catch (Exception e) {}
@@ -106,7 +107,7 @@ public class TweetNavigator {
         }
         //Reload configuration with new credential
         buildConfiguration();
-        Console.out.println("[Twitter Crawler]: Using credential " + credentialIndex%credentials.length);
+        Console.out.println("[Crawler]: Using credential " + credentialIndex%credentials.length);
     }
 
     /**

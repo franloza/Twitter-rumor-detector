@@ -1,0 +1,11 @@
+Decision Tree	Accuracy: 0.55 (+/- 0.26)
+Random Forest	Accuracy: 0.41 (+/- 0.41)
+k-NN	Accuracy: 0.43 (+/- 0.43)
+                   mean       std
+Decision Tree  0.549779  0.129881
+Random Forest  0.413985  0.204207
+k-NN           0.426118  0.213196
+
+
+attributes = tweets[['retweetCount', 'favoriteCount', 'creationDay']]
+classes = tweets[['assertion', 'topic', 'rumor']]

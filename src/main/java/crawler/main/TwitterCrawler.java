@@ -7,7 +7,10 @@ import crawler.misc.Console;
 import app.model.Tweet;
 import crawler.twitter.TweetNavigator;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.util.*;
 
 /**
@@ -40,7 +43,7 @@ public class TwitterCrawler {
         Console.captureOutput();
         //Load credentials file
         TwitterCrawler crawler = new TwitterCrawler(CREDENTIALS_FILE);
-        crawler.start3();
+        crawler.start4();
     }
 
     public void start() {
@@ -94,6 +97,46 @@ public class TwitterCrawler {
         }
     }
 
+    public void start4() {
+        try {
+            Scanner in = new Scanner(new FileInputStream("Rumors.txt"));
+            if(!new File("Rumors_TFIDF.csv").exists()) {
+                PrintStream print = new PrintStream(new FileOutputStream("Rumors_TFIDF.csv"));
+                print.println("id;userId;userName;text;creationDate;retweetCount;favoriteCount;textHash;crawledId;score");
+                print.close();
+            }
+            if(!new File("Rumors_TF.csv").exists()) {
+                PrintStream print = new PrintStream(new FileOutputStream("Rumors_TF.csv"));
+                print.println("id;userId;userName;text;creationDate;retweetCount;favoriteCount;textHash;crawledId;score");
+                print.close();
+            }
+            while(in.hasNext()) {
+                try {
+                    long tweetID = Long.valueOf(in.nextLine());
+                    //Fetch the tweet
+                    Tweet query = new Tweet(twitter.getTweetByTweetID(tweetID));
+                    //Crawl tweets
+                    List<Tweet> crawled = crawl(query);
+                    //TFIDF
+                    List<ScoredTweet> scoredTFIDF = getBestTweetsTFIDF(query, crawled);
+                    FileOutputStream out = new FileOutputStream("Rumors_TFIDF.csv",true);
+                    ScoredTweet.writeToCSV(scoredTFIDF,out);
+                    out.close();
+                    //TF
+                    List<ScoredTweet> scoredTF = getBestTweetsTF(query, crawled);
+                    out = new FileOutputStream("Rumors_TF.csv",true);
+                    ScoredTweet.writeToCSV(scoredTF,out);
+                    out.close();
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            in.close();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * Extracts tweets related to the provided tweet
      *
@@ -124,10 +167,11 @@ public class TwitterCrawler {
         //Start crawling from the initial tweet
         toCrawlResponse.put(tweet.getTextHash(),tweet);
         toCrawlUser.put(tweet.getTextHash(),tweet);
+        Console.out.println("[Crawler]: Crawling TweetID " + tweet.getStatus().getId() + " started");
         while(result.size() + toCrawlResponse.size() + toCrawlUser.size() - 1 < FETCH_TWEETS) {
-            Console.out.print("[Twitter Crawler]: Total crawled tweets : " + lastResultSize);
+            Console.out.println("[Crawler]: Total result size: " + lastResultSize);
             //Fetch tweets from the same user
-            Console.out.println("[Twitter Crawler]: Size of same user tweets: " + toCrawlResponse.size());
+            Console.out.println("[Crawler]: User timeline tweets: " + toCrawlUser.size());
             for (Integer key : toCrawlUser.keySet()) {
                 //Early exit
                 if(result.size() + toCrawlResponse.size() + toCrawlUser.size() - 1 >= FETCH_TWEETS) break;
@@ -140,7 +184,7 @@ public class TwitterCrawler {
             result.putAll(toCrawlUser);
             toCrawlUser.clear();
             //Fetch in-reply-to and response tweets
-            Console.out.println("[Twitter Crawler]: Size of in-reply-to and response tweets: " + toCrawlResponse.size());
+            Console.out.println("[Crawler]: Response tweets: " + toCrawlResponse.size());
             for (Integer key : toCrawlResponse.keySet()) {
                 //Early exit
                 if(result.size() + toCrawlResponse.size() + toCrawlUser.size() - 1 >= FETCH_TWEETS) break;
@@ -173,6 +217,7 @@ public class TwitterCrawler {
         result.remove(tweet.getTextHash());
         //Filter tweets
         resultList = Arrays.asList(result.values().toArray(new Tweet[0]));
+        Console.out.println("[Crawler]: Crawling TweetID " + tweet.getStatus().getId() + " finished");
         return resultList;
     }
 

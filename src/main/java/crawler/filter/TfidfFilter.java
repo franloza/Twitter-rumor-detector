@@ -55,7 +55,7 @@ public class TfidfFilter {
                 for(int i = 0 ; i < documents.size() ; i++) {
                     Map<String,Double> tf = TF.get(i);
                     Tweet document = documents.get(i);
-                    ScoredTweet scored = new ScoredTweet(document);
+                    ScoredTweet scored = new ScoredTweet(document,query.getStatus().getId());
                     //Modules of document and query TF vectors for cosine normalization
                     double nDoc = 0.0;
                     double nQuery = 0.0;
@@ -68,7 +68,7 @@ public class TfidfFilter {
                             }
                         }
                         //Divide by modules for cosine normalization
-                        scored.score /= (nDoc * nQuery);
+                        scored.score /= (Math.sqrt(nDoc) * Math.sqrt(nQuery));
                     }
                     scoredTweets.add(scored);
                 }
@@ -81,7 +81,7 @@ public class TfidfFilter {
                     Map<String,Double> tf = TF.get(i);
                     Map<String,Double> tfidf = TfIdf.tfIdf(tf, IDF);
                     Tweet document = documents.get(i);
-                    ScoredTweet scored = new ScoredTweet(document);
+                    ScoredTweet scored = new ScoredTweet(document,query.getStatus().getId());
                     if(tfidf.size() >= minTerms)
                         for(String term : tfidf.keySet())
                             if(term.length() >= minTermSize)

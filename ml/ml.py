@@ -27,40 +27,47 @@ stemmer = PorterStemmer()
 stopws = set(stopwords.words('english'))
 vectorizer = CountVectorizer(analyzer = 'word')
 
+def clean_data(data):
+	data.creationDate = pd.to_datetime(data.creationDate)
+	data['creationDay'] = data.creationDate.apply(lambda x: x.weekday())
+	data['creationMonth'] = data.creationDate.apply(lambda x: x.month)
+	data.text = data.text.apply(tokenizer.tokenize)
+	data.text = data.text.apply(lambda x: [w for w in x if w not in stopws and w.lower() not in string.punctuation])
+	data.text = data.text.apply(lambda x: [stemmer.stem(w) for w in x])
+	data['text_j'] = data.text.apply(lambda x: ' '.join(x))
+	data['response'] = data.text_j.apply(lambda x: x.startswith(('@', ' @')))
+	return data
+
 tweets = pd.read_csv('tweets_unfiltered.csv', delimiter=';')
-tweets.creationDate = pd.to_datetime(tweets.creationDate)
-tweets['creationDay'] = tweets.creationDate.apply(lambda x: x.weekday())
-tweets['creationMonth'] = tweets.creationDate.apply(lambda x: x.month)
-tweets.text = tweets.text.apply(tokenizer.tokenize)
-tweets.text = tweets.text.apply(lambda x: [w for w in x if w not in stopws and w.lower() not in string.punctuation])
-tweets.text = tweets.text.apply(lambda x: [stemmer.stem(w) for w in x])
-tweets['text_j'] = tweets.text.apply(lambda x: ' '.join(x))
-tweets['response'] = tweets.text_j.apply(lambda x: x.startswith(('@', ' @')))
+tweets = clean_data(tweets)
 
 attributes = tweets[['retweetCount', 'favoriteCount', 'creationDay', 'creationMonth', 'response']]
 attributes = pd.concat((attributes, pd.DataFrame(vectorizer.fit_transform(tweets.text_j).toarray())), axis=1)
-
 classes = tweets.rumor
-# classes = tweets[['topic', 'assertion', 'rumor']]
-
-
-
 
 rf = RandomForestClassifier(n_estimators = 100)
 dt = DecisionTreeClassifier()
 
+# Train the classifiers
 rf.fit(attributes, classes)
 dt.fit(attributes, classes)
 
 def predict_rf(text, rt, fav, date):
+	data = pd.DataFrame([[text, date, rt, fav]], columns=['text','creationDate', 'retweetCount', 'favoriteCount'])
+	data = clean_data(data)
+	attributes = data[['retweetCount', 'favoriteCount', 'creationDay', 'creationMonth', 'response']]
+	attributes = pd.concat((attributes, pd.DataFrame(vectorizer.transform(data.text_j).toarray())), axis=1)
 
-	# rf.predict()
-	return "Hi"
+	return int(rf.predict(attributes))
+
 
 def predict_dt(text, rt, fav, date):
-	return "Hi"
+	data = pd.DataFrame([[text, date, rt, fav]], columns=['text','creationDate', 'retweetCount', 'favoriteCount'])
+	data = clean_data(data)
+	attributes = data[['retweetCount', 'favoriteCount', 'creationDay', 'creationMonth', 'response']]
+	attributes = pd.concat((attributes, pd.DataFrame(vectorizer.transform(data.text_j).toarray())), axis=1)
 
-
+	return int(dt.predict(attributes))
 
 
 def test(X, y, f, k=10):
@@ -84,7 +91,7 @@ def test(X, y, f, k=10):
 	for n, m in models.items():
 		np.random.seed(121)
 		fs = cross_val_score(m, X, y, scoring=f, cv=k)
-		# print("%s\F1: %0.2f (+/- %0.2f)" % (n, fs.mean(), fs.std() * 2))
+		# print("%s\%s: %0.2f (+/- %0.2f)" % (n, f, fs.mean(), fs.std() * 2))
 		df.loc[n] = fs.mean(), fs.std()
 	return df
 

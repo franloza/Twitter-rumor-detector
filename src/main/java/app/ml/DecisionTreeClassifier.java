@@ -4,11 +4,11 @@ import app.model.Tweet;
 import app.util.SendPost;
 
 /**
- * @author guille
+ * Created by guille on 11/5/16.
  */
-public class RandomForestClassifier implements TweetClassifier {
+public class DecisionTreeClassifier implements TweetClassifier {
 	public double getRumorScore(Tweet tweet) {
-		String url = "localhost:5000/rf";
+		String url = "localhost:5000/dt";
 		Integer rt = tweet.getStatus().getRetweetCount();
 		String date = tweet.getStatus().getCreatedAt().toString();
 		Integer fav = tweet.getStatus().getFavoriteCount();
@@ -16,4 +16,5 @@ public class RandomForestClassifier implements TweetClassifier {
 
 		return Float.parseFloat(SendPost.send(url, text, rt, fav, date));
 	}
+
 }

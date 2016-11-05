@@ -1,17 +1,25 @@
 import os
 from flask import Flask, request
-from ml import hello
+from ml import predict_rf, predict_dt
 app = Flask(__name__)
 
-@app.route('/')
-def say_hi():
-	return hello()
+@app.route('/dt/', methods=['POST'])
+def predict_tweet():
+	text = request.form['text']
+	rt = request.form['rt']
+	fav = request.form['fav']
+	date = request.form['date']
 
-#@app.route('/login', methods=['GET', 'POST'])
-@app.route('/user/<username>')
-def show_user_profile(username):
-	# show the user profile for that user
-	return 'User %s' % username
+	return predict_dt(text, rt, fav, date)
+
+@app.route('/rf/', methods=['POST'])
+def predict_tweet():
+	text = request.form['text']
+	rt = request.form['rt']
+	fav = request.form['fav']
+	date = request.form['date']
+
+	return predict_rf(text, rt, fav, date)
 
 if __name__ == "__main__":
 	app.run()

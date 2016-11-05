@@ -70,10 +70,12 @@ public class QueryBuilder {
         int count = 1;
         sb.appendln("Keyword information:");
         TreeSet<Pair<String, Double>> keywords = DataManager.getInstance().getKeywords().getElements();
+        double acum = 0;
         for (Pair<String,Double> keyword: keywords) {
             String keywordStr = keyword.getLeft();
             sb.appendln("\tKeyword #" + count + ": " + keywordStr);
-            sb.appendln(String.format("\tWeight: %.2f", keyword.getRight()));
+            sb.appendln(String.format("\tWeight: %.2f", keyword.getRight()-acum));
+            acum += keyword.getRight() - acum;
             List<String> additionalWords = nn.getWordsNearest(keywordStr, similarWords);
             if(additionalWords.size()>0) {
                 sb.appendln("\tTop " + similarWords + " similar words to " + keywordStr);
@@ -88,15 +90,6 @@ public class QueryBuilder {
             }
             sb.append("\n");
             count++;
-        }
-
-        //Get stop words
-        List<String> stopWords = nn.getStopWords();
-        if(stopWords.size() > 0) {
-            sb.appendln("Stop words:");
-            for(String word: stopWords) {
-                sb.appendln("\t"+word);
-            }
         }
 
         //Test queries
@@ -137,8 +130,6 @@ public class QueryBuilder {
             }
 
         }
-
-
         return sb.toString();
     }
 }

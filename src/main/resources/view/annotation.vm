@@ -7,7 +7,7 @@
             #foreach($tweet in $tweets )
                 <li>
                     <blockquote class="twitter-tweet">
-                        <b> @$tweet.getUser().getScreenName() </b>  - $tweet.getText()) <br/>
+                        <b> @$tweet.getUser().getScreenName() </b>  - $tweet.getText() <br/>
                         <i class="fa fa-retweet" aria-hidden="true"></i> $tweet.getRetweetCount() <br/>
                         <span class="creationDate">$tweet.getCreatedAt()</span>
                     </blockquote>

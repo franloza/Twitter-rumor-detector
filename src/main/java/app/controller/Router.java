@@ -20,6 +20,9 @@ public class Router {
         get(Path.Web.ANNOTATION,     AnnotationController.servePage);
         get(Path.Web.TWEET_COLLECTOR, TweetCollectorController.servePage);
         get(Path.Web.RUMOR_CRAWLER,  RumorCrawlerController.servePage);
+        get(Path.Web.CLASSIFIER,    TweetClassifierController.servePage);
+        post(Path.Web.ANNOTATION,    AnnotationController.processRequest);
+        post(Path.Web.CLASSIFIER,    TweetClassifierController.processRequest);
         post(Path.Web.ANNOTATION,    AnnotationController.processRequest);
         get(Path.Web.BENCHMARK, (request, response) -> ViewUtil.render(request, new HashMap<>(), Path.Template.BENCHMARK));
         get(Path.Web.BENCHMARK_QB, (request, response) -> {

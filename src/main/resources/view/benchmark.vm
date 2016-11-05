@@ -1,8 +1,8 @@
 #parse("/view/layout.vm")
 #@mainLayout()
 <h1>Benchmarks</h1>
-    <div id="links">
-        <a href="query-builder">Query Builder</a><br/>
-        <a href="/">Back</a>
-    </div>
+<div id="index-button-bar">
+    <p><a id="annotationLink" href="query-builder" > Query Builder</a></p>
+    <p><a id="benchmarksLink" href="/" > Back</a></p>
+</div>
 #end

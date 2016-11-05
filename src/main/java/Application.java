@@ -25,6 +25,7 @@ public class Application {
             AnnotationController.start(th);
             TweetCollectorController.start(th);
             RumorCrawlerController.start(th);
+            TweetClassifierController.start(th);
             BenchmarkController.start(th.getQueryBuilder());
 
             // Set up before-filters (called before each get/post)

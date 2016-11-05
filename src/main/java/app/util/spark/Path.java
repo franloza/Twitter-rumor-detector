@@ -15,6 +15,7 @@ public class Path {
         @Getter public static final String ANNOTATION = "/annotation/";
         @Getter public static final String TWEET_COLLECTOR= "/tweet-collector/";
         @Getter public static final String RUMOR_CRAWLER = "/rumor-crawler/";
+        @Getter public static final String CLASSIFIER = "/tweet-classifier/";
         @Getter public static final String BENCHMARK = "/benchmark/";
         @Getter public static final String BENCHMARK_QB = "/benchmark/query-builder/";;
     }
@@ -25,6 +26,8 @@ public class Path {
         public final static String KEYWORD_CRAWLER = "view/tweetCollector.vm";
         public final static String RUMOR_CRAWLER = "view/rumorCrawler.vm";
         public final static String BENCHMARK= "view/benchmark.vm";
+        public final static String CLASSIFIER_GET= "view/tweetClassifierGet.vm";
+        public final static String CLASSIFIER_POST= "view/tweetClassifierPost.vm";
         public final static String BENCHMARK_QB= "view/benchmarks/queryBuilder.vm";
         public final static String NOT_FOUND = "/view/notFound.vm";
         public final static String TWITTER_ERROR ="/view/twitterError.vm";

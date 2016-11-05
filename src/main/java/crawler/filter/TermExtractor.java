@@ -1,7 +1,7 @@
 package crawler.filter;
 
 import com.twitter.Extractor;
-import crawler.twitter.Tweet;
+import app.model.Tweet;
 
 import java.util.ArrayList;
 import java.util.List;

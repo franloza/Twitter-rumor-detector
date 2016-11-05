@@ -1,8 +1,8 @@
 package app.db;
 
-import app.twitter.ClassifiedTweet;
+import app.model.ClassifiedTweet;
 import app.twitter.TweetFilter;
-import crawler.twitter.Tweet;
+import app.model.Tweet;
 import crawler.twitter.TwitterStatus;
 import crawler.twitter.TwitterUser;
 import twitter4j.Status;

@@ -24,6 +24,9 @@ h1, h2, h3, h4 {
     font-weight: 300;
     color: #444;
 }
+h2 {
+    margin-bottom: 0px;
+}
 
 li {
     list-style:none;
@@ -83,6 +86,15 @@ small {
 
 #rumorCrawlerLink:hover,  #rumorCrawlerLink:active {
     background-color: #05853a;
+}
+
+#tweetClassifierLink:link,  #tweetClassifierLink:visited  {
+    background-color: #f48231;
+    color: white;
+}
+
+#tweetClassifierLink:hover,  #tweetClassifierLink:active {
+    background-color: #854800;
 }
 
 
@@ -209,6 +221,54 @@ input:checked + .slider:before {
 #datasetInfo {
     padding:10px;
 }
+
+/*Score radial bars*/
+.progress{
+    width: 200px;
+    height: 280px;
+}
+.progress .track, .progress .fill{
+    fill: rgba(0, 0, 0, 0);
+    stroke-width: 3;
+    transform: rotate(90deg)translate(0px, -80px);
+}
+.progress .track{
+    stroke: rgb(56, 71, 83);
+}
+.progress .fill {
+    stroke: rgb(255, 255, 255);
+    stroke-dasharray: 219.99078369140625;
+    stroke-dashoffset: -219.99078369140625;
+    transition: stroke-dashoffset 1s;
+}
+.progress.blue .fill {
+    stroke: rgb(104, 214, 198);
+}
+.progress.yellow .fill {
+    stroke: rgb(220, 164, 0);
+}
+
+.progress.red .fill {
+    stroke: rgb(220, 0, 0);
+}
+.progress .value, .progress .text {
+    font-family: 'Open Sans';
+    fill: rgb(66, 66, 66);
+    text-anchor: middle;
+}
+.progress .text {
+    font-size: 12px;
+}
+.noselect {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    cursor: default;
+}
+
 
 /*Footer*/
 footer {

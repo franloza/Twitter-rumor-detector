@@ -1,0 +1,41 @@
+#parse("/view/layout.vm")
+#@mainLayout()
+<h1>$msg.get("TWEET_CLASSIFIER_HEADING")</h1>
+    #if ($!tweet)
+    <div class="tweet-list" id="tweet">
+        <blockquote class="twitter-tweet">
+            <b> @$tweet.getUser().getScreenName() </b>  - $tweet.getText()) <br/>
+            <i class="fa fa-retweet" aria-hidden="true"></i> $tweet.getRetweetCount() <br/>
+            <span class="creationDate">$tweet.getCreatedAt()</span>
+        </blockquote>
+    </div>
+    #end
+    #if ($!nnTweet)
+        <h2>NN Classifier</h2>
+        <h3>$msg.get("TWEET_CLASSIFIER_NN_TWEET")</h3>
+            <div class="tweet-list" id="nnTweet">
+                <blockquote class="twitter-tweet">
+                    <b> @$nnTweet.getUser().getScreenName() </b>  - $nnTweet.getText()) <br/>
+                    <i class="fa fa-retweet" aria-hidden="true"></i> $nnTweet.getRetweetCount() <br/>
+                    <span class="creationDate">$nnTweet.getCreatedAt()</span>
+                </blockquote>
+            </div>
+    #elseif($dummyScore >= 0)
+    <h2>Dummy classifier</h2>
+    <div id="radial-score" class="center">
+        <svg class="progress red noselect" data-progress=$dummyScore x="0px" y="0px" viewBox="0 0 80 80">
+            <path class="track" d="M5,40a35,35 0 1,0 70,0a35,35 0 1,0 -70,0" />
+            <path class="fill" d="M5,40a35,35 0 1,0 70,0a35,35 0 1,0 -70,0" />
+            <text class="value" x="50%" y="55%">$dummyScore%</text>
+            <text class="text" x="50%" y="0%">Rumor</text>
+        </svg>
+    </div>
+    #else
+    <h2>$msg.get("TWEET_CLASSIFIER_NORESULT")</h2>
+    #end
+<div id="index-button-bar">
+    <p><a id="benchmarksLink" href="/tweet-classifier" >Try another</a></p>
+</div>
+<script src="/progress.js"></script>
+#end
+

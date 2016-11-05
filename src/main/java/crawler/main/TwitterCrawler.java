@@ -1,10 +1,10 @@
 package crawler.main;
 
 import crawler.filter.PorterStemmer;
-import crawler.filter.ScoredTweet;
+import app.model.ScoredTweet;
 import crawler.filter.TfidfFilter;
 import crawler.misc.Console;
-import crawler.twitter.Tweet;
+import app.model.Tweet;
 import crawler.twitter.TweetNavigator;
 
 import java.io.FileOutputStream;

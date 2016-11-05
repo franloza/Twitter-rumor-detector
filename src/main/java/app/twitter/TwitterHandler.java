@@ -4,13 +4,16 @@ import app.db.DataManager;
 import app.db.TweetDAO;
 import app.ml.KeywordExtractor;
 import app.ml.KeywordExtractorAdapter;
-import crawler.filter.ScoredTweet;
+import app.model.ClassifiedTweet;
+import app.model.ScoredTweet;
+import app.model.Tweet;
 import crawler.main.TwitterCrawler;
-import crawler.twitter.Tweet;
 import twitter4j.*;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
@@ -195,9 +198,9 @@ public class TwitterHandler {
             }
             if (!exists) {
                 System.out.println("Extracted new keyword: {" + extracted + "}");
-                DataManager.getInstance().getKeywords().add(extracted, 1);
+                DataManager.getInstance().getKeywords().add(extracted, 0.25);
                 //Update database
-                updateWeight(extracted, 1);
+                updateWeight(extracted, 0.25);
             }
         }
 
@@ -290,5 +293,26 @@ public class TwitterHandler {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    public Tweet parseURL(String url) {
+        URI uri;
+        try {
+            uri = new URI(url);
+            String[] segments = uri.getPath().split("/");
+            if(segments.length > 0) {
+                String idStr = segments[segments.length-1];
+                long id = Long.parseLong(idStr);
+                Twitter twitter = new TwitterFactory().getInstance();
+                twitter.showStatus(id);
+                Status status = twitter.showStatus(id);
+                if(status != null)return new Tweet(status);
+                else return null;
+            }
+        } catch (URISyntaxException|NumberFormatException|TwitterException e) {
+            System.err.println("The tweet couldn't be retrieved'");
+            return null;
+        }
+       return null;
     }
 }

@@ -1,6 +1,7 @@
 package crawler.filter;
 
-import crawler.twitter.Tweet;
+import app.model.ScoredTweet;
+import app.model.Tweet;
 
 import java.util.ArrayList;
 import java.util.List;

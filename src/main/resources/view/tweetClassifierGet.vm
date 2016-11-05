@@ -1,0 +1,10 @@
+#parse("/view/layout.vm")
+#@mainLayout()
+<h1 xmlns="http://www.w3.org/1999/html">$msg.get("TWEET_CLASSIFIER_HEADING")</h1>
+<p>$msg.get("TWEET_CLASSIFIER_DESCRIPTION")</p>
+    <form action="" method="post">
+        Tweet URL: <input type="url" name="url"/>
+        <button type="submit">Submit</button>
+    </form>
+#end
+

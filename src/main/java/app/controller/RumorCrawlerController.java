@@ -3,7 +3,7 @@ package app.controller;
 import app.twitter.TwitterHandler;
 import app.util.spark.Path;
 import app.util.spark.ViewUtil;
-import crawler.twitter.Tweet;
+import app.model.Tweet;
 import spark.Request;
 import spark.Response;
 import spark.Route;

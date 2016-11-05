@@ -1,9 +1,8 @@
 package crawler.main;
 
-import crawler.twitter.Tweet;
+import app.model.Tweet;
 import crawler.twitter.TweetNavigator;
 
-import java.io.FileOutputStream;
 import java.util.List;
 import java.util.Scanner;
 

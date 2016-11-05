@@ -44,6 +44,25 @@ classes = tweets.rumor
 # classes = tweets[['topic', 'assertion', 'rumor']]
 
 
+
+
+rf = RandomForestClassifier(n_estimators = 100)
+dt = DecisionTreeClassifier()
+
+rf.fit(attributes, classes)
+dt.fit(attributes, classes)
+
+def predict_rf(text, rt, fav, date):
+
+	# rf.predict()
+	return "Hi"
+
+def predict_dt(text, rt, fav, date):
+	return "Hi"
+
+
+
+
 def test(X, y, f, k=10):
 	"""
 	Runs cross-validation for multiple models.
@@ -58,7 +77,7 @@ def test(X, y, f, k=10):
 	models = {
 		'Random Forest': RandomForestClassifier(n_estimators = 100),
 		'Decision Tree': DecisionTreeClassifier(),
-		'k-NN': KNeighborsClassifier()
+		# 'k-NN': KNeighborsClassifier()
 	}
 
 	df = pd.DataFrame(columns=('mean', 'std'))
@@ -70,9 +89,3 @@ def test(X, y, f, k=10):
 	return df
 
 # res = test(attributes, classes, 'f1')
-res = test(attributes, classes, 'f1')
-
-print(res)
-
-def hello():
-	return "Hi"

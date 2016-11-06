@@ -4,7 +4,7 @@
     <div id="index-button-bar">
         <p><a id="annotationLink" href="/annotation" > Annotation tool</a></p>
         <p><a id="keywordCrawlerLink" href="/tweet-collector" > Tweet collector</a></p>
-        <p><a id="rumorCrawlerLink" href="/rumor-crawler" > Rumor crawler</a></p>
+        <p><a id="rumorCrawlerLink" href="/rumor-crwler" > Rumor crawler</a></p>
         <p><a id="tweetClassifierLink" href="/tweet-classifier" > Tweet Classifier</a></p>
         <p><a id="benchmarksLink" href="/benchmark" > Benchmarks</a></p>
     </div>

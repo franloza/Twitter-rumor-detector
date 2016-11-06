@@ -2,6 +2,7 @@ package app.twitter;
 
 import app.db.DataManager;
 import app.db.TweetDAO;
+import app.ml.DuplicateDetector;
 import app.ml.KeywordExtractor;
 import app.ml.KeywordExtractorAdapter;
 import app.model.ClassifiedTweet;
@@ -75,6 +76,7 @@ public class TwitterHandler {
         /*Authentication is done by means of twitter4j.properties file.
           The factory instance is re-useable and thread safe.*/
         Twitter twitter = new TwitterFactory().getInstance();
+        List <String> tweetsText = new LinkedList<>();
         List<Status> tweets = new LinkedList<>();
         int usedResults = 0;
         Query query = buildQuery();
@@ -93,10 +95,13 @@ public class TwitterHandler {
                 String text = TweetFilter.basicFilter(tweet.getText());
                 if (!tDao.checkDuplicate(tweet.getId(), text.hashCode())) {
                     //Saves the tweet in the database and adds it to the result list
-                    tweets.add(tweet);
-                    saveTweet(tweet);
-                    usedResults++;
-                    minId = tweet.getId();
+                    if (!DuplicateDetector.isDuplicated(TweetFilter.filter(text),tweetsText)){
+                        tweets.add(tweet);
+                        tweetsText.add(TweetFilter.filter(tweet.getText()));
+                        saveTweet(tweet);
+                        usedResults++;
+                        minId = tweet.getId();
+                    }
                 }
             }
             //Return the tweets in the maximum number of tweets has been reached

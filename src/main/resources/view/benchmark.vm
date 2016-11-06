@@ -3,6 +3,7 @@
 <h1>Benchmarks</h1>
 <div id="index-button-bar">
     <p><a id="annotationLink" href="query-builder" > Query Builder</a></p>
+    <p><a id="rumorCrawlerLink" href="duplicate-detector" > Duplicate Detector</a></p>
     <p><a id="benchmarksLink" href="/" > Back</a></p>
 </div>
 #end

@@ -1,0 +1,58 @@
+#parse("/view/layout.vm")
+#@mainLayout()
+<h1>$msg.get("BENCHMARK_DD_HEADING")</h1>
+<div id="results">
+    <style type="text/css">
+        .tg  {border-collapse:collapse;border-spacing:0;}
+        .tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;}
+        .tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;}
+        .tg .tg-c9cr{font-style:italic}
+        .tg .tg-yfvh{font-weight:bold;font-style:italic;vertical-align:top}
+        .tg .tg-jogk{font-style:italic;vertical-align:top}
+        .tg .tg-yw4l{vertical-align:top}
+        .tg .tg-9hbo{font-weight:bold;vertical-align:top}
+    </style>
+    <h2>Number of examples used</h2>
+    <p> Non-duplicate pairs: <strong>435</strong> <br/>
+        Number of duplicate pairs: <strong> 15 </strong></p>
+    <h2>Results</h2>
+    <table class="tg">
+        <tr>
+            <th class="tg-c9cr">Similarity/Score</th>
+            <th class="tg-jogk">Optimum threshold</th>
+            <th class="tg-jogk">Precision</th>
+            <th class="tg-jogk">Recall</th>
+            <th class="tg-jogk">F1-Score</th>
+        </tr>
+        <tr>
+            <td class="tg-jogk">Jaccard</td>
+            <td class="tg-yw4l">0.49</td>
+            <td class="tg-yw4l">0.85</td>
+            <td class="tg-yw4l">0.73</td>
+            <td class="tg-yw4l">0.79</td>
+        </tr>
+        <tr>
+            <td class="tg-jogk">Cosine</td>
+            <td class="tg-yw4l">0.70</td>
+            <td class="tg-yw4l">0.85</td>
+            <td class="tg-yw4l">0.73</td>
+            <td class="tg-yw4l">0.79</td>
+        </tr>
+        <tr>
+            <td class="tg-jogk">Jaro Winkler</td>
+            <td class="tg-yw4l">0.76</td>
+            <td class="tg-yw4l">0.73</td>
+            <td class="tg-yw4l">0.73</td>
+            <td class="tg-yw4l">0.73</td>
+        </tr>
+        <tr>
+            <td class="tg-yfvh">Normalized Levenshtein</td>
+            <td class="tg-9hbo">0.70</td>
+            <td class="tg-9hbo">0.86</td>
+            <td class="tg-9hbo">0.80</td>
+            <td class="tg-9hbo">0.83</td>
+        </tr>
+    </table>
+</div>
+#end
+

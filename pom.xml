@@ -155,5 +155,10 @@
             <artifactId>language-detector</artifactId>
             <version>0.6</version>
         </dependency>
+        <dependency>
+            <groupId>info.debatty</groupId>
+            <artifactId>java-string-similarity</artifactId>
+            <version>RELEASE</version>
+        </dependency>
     </dependencies>
 </project>

@@ -33,6 +33,7 @@ public class Router {
             model.put("result",result);
             return ViewUtil.render(request, model, Path.Template.BENCHMARK_QB);
         });
+        get(Path.Web.BENCHMARK_DD, (request, response) -> ViewUtil.render(request, new HashMap<>(), Path.Template.BENCHMARK_DD));
         get("*",                     ViewUtil.notFound);
     }
 }

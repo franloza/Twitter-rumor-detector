@@ -14,7 +14,6 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.svm import NuSVC, LinearSVC
 
 # Testing
 from sklearn.model_selection import cross_val_score
@@ -95,4 +94,5 @@ def test(X, y, f, k=10):
 		df.loc[n] = fs.mean(), fs.std()
 	return df
 
-# res = test(attributes, classes, 'f1')
+# res = test(attributes, classes, 'accuracy')
+# print(res)

@@ -1,6 +1,0 @@
-Measuring accuracy
-
-                   mean       std
-k-NN           0.898913  0.019219
-Decision Tree  0.876956  0.043869
-Random Forest  0.919117  0.019783

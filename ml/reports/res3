@@ -1,0 +1,4 @@
+                   mean       std
+Decision Tree  0.242152  0.256748
+k-NN           0.053333  0.110755
+Random Forest  0.255952  0.279762

@@ -10,6 +10,30 @@
         </blockquote>
     </div>
     #end
+    #if($!rfScore >= 0)
+        #if ($rfScore == 1)
+            #set( $rumor = true )
+        #else
+            #set( $rumor = false )
+        #end
+        <h2>Random Forest Classifier</h2>
+        #if ($rumor) <p id="result" class="true"> The tweet is a rumor
+        #else <p id="result" class="false"> The tweet is not a rumor
+        #end
+        </p>
+    #end
+    #if($!dtScore >= 0)
+        #if ($dtScore == 1)
+            #set( $rumor = true )
+        #else
+            #set( $rumor = false )
+        #end
+    <h2>Decision Tree Classifier</h2>
+        #if ($rumor) <p id="result" class="true"> The tweet is a rumor
+        #else <p id="result" class="false"> The tweet is not a rumor
+        #end
+    </p>
+    #end
     #if ($!nnTweet)
         <h2>NN Classifier</h2>
         <h3>$msg.get("TWEET_CLASSIFIER_NN_TWEET")</h3>

@@ -8,13 +8,14 @@ import app.util.SendPost;
  */
 public class DecisionTreeClassifier implements TweetClassifier {
 	public double getRumorScore(Tweet tweet) {
-		String url = "localhost:5000/dt";
+		String url = "http://localhost:5000/dt/";
 		Integer rt = tweet.getStatus().getRetweetCount();
 		String date = tweet.getStatus().getCreatedAt().toString();
 		Integer fav = tweet.getStatus().getFavoriteCount();
 		String text = tweet.getStatus().getText();
-
-		return Float.parseFloat(SendPost.send(url, text, rt, fav, date));
+		String result = SendPost.send(url, text, rt, fav, date);
+		System.out.println("Result: " + result);
+		return result.equals("True")?1:0;
 	}
 
 }

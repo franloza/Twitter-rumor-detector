@@ -56,17 +56,14 @@ def predict_rf(text, rt, fav, date):
 	data = clean_data(data)
 	attributes = data[['retweetCount', 'favoriteCount', 'creationDay', 'creationMonth', 'response']]
 	attributes = pd.concat((attributes, pd.DataFrame(vectorizer.transform(data.text_j).toarray())), axis=1)
-
-	return int(rf.predict(attributes))
-
+	return str(rf.predict(attributes)[0])
 
 def predict_dt(text, rt, fav, date):
 	data = pd.DataFrame([[text, date, rt, fav]], columns=['text','creationDate', 'retweetCount', 'favoriteCount'])
 	data = clean_data(data)
 	attributes = data[['retweetCount', 'favoriteCount', 'creationDay', 'creationMonth', 'response']]
 	attributes = pd.concat((attributes, pd.DataFrame(vectorizer.transform(data.text_j).toarray())), axis=1)
-
-	return int(dt.predict(attributes))
+	return str(rf.predict(attributes)[0])
 
 
 def test(X, y, f, k=10):

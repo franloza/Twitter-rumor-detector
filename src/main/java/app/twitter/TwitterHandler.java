@@ -63,8 +63,10 @@ public class TwitterHandler {
         };
         crawlerThread.start();
 
-        //Export tweets to CSV and TXT
-        //classifiedToCSV(true); //Filtered
+        //Export tweets to CSV for Classifier
+        //classifiedToCSV("src/main/python/ml/",false);
+        //classifiedToCSV("src/main/resources/data/docs/ml/",true);
+        //classifiedToCSV("src/main/resources/data/docs/ml/",false);
 
         //Extract keywords
         extractKeywords();
@@ -190,7 +192,7 @@ public class TwitterHandler {
      */
     public void extractKeywords () {
         //Update list of rumor tweets
-        rumorsToTXT(true);
+        rumorsToTXT("src/main/resources/data/docs/",true);
 
         KeywordExtractor ke = new KeywordExtractorAdapter();
         List<String> extractedKeywords = ke.getKeywords();
@@ -264,9 +266,8 @@ public class TwitterHandler {
         return tDao.countCrawled("tf") + tDao.countCrawled("idf");
     }
 
-    private void classifiedToCSV(boolean filtered) {
-        System.out.println("Exporting classified tweets to CSV file...");
-        String path = "src/main/resources/data/docs/";
+    private void classifiedToCSV(String path, boolean filtered) {
+        System.out.println("Exporting classified tweets to CSV file in " + path);
         try {
             if (filtered) path += "tweets_filtered.csv"; else path += "tweets_unfiltered.csv";
             FileOutputStream out = new FileOutputStream(path);
@@ -276,9 +277,8 @@ public class TwitterHandler {
         }
     }
 
-    private void classifiedToTXT(boolean filtered) {
-        System.out.println("Exporting classified tweets to TXT file...");
-        String path = "src/main/resources/data/docs/";
+    private void classifiedToTXT(String path, boolean filtered) {
+        System.out.println("Exporting classified tweets to TXT file in " + path);
         try {
             if (filtered) path += "tweets_filtered.txt"; else path += "tweets_unfiltered.txt";
             FileOutputStream out = new FileOutputStream(path);
@@ -288,9 +288,8 @@ public class TwitterHandler {
         }
     }
 
-    private void rumorsToTXT(boolean filtered) {
-        System.out.println("Exporting rumors to TXT file...");
-        String path = "src/main/resources/data/docs/";
+    private void rumorsToTXT(String path, boolean filtered) {
+        System.out.println("Exporting rumors to TXT file in " + path);
         try {
             if (filtered) path += "rumors_filtered.txt"; else path += "rumors_unfiltered.txt";
             FileOutputStream out = new FileOutputStream(path);

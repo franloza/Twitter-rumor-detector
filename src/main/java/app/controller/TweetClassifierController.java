@@ -1,6 +1,8 @@
 package app.controller;
 
+import app.ml.DecisionTreeClassifier;
 import app.ml.DummyClassifier;
+import app.ml.RandomForestClassifier;
 import app.ml.TweetClassifier;
 import app.model.Tweet;
 import app.twitter.TwitterHandler;
@@ -36,8 +38,11 @@ public class TweetClassifierController {
         if(tweet != null) {
             model.put("tweet", tweet.getStatus());
             TweetClassifier dummy = new DummyClassifier();
-            dummy.getRumorScore(tweet);
+            TweetClassifier rf = new RandomForestClassifier();
+            TweetClassifier dt = new DecisionTreeClassifier();
             model.put("dummyScore",Math.round(dummy.getRumorScore(tweet) * 100));
+            model.put("rfScore",Math.round(rf.getRumorScore(tweet)));
+            model.put("dtScore",Math.round(dt.getRumorScore(tweet)));
         }
         return ViewUtil.render(request, model, Path.Template.CLASSIFIER_POST);
     };

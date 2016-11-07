@@ -23,6 +23,8 @@ Features
 
 -   Language detection
 
+-   Duplicate detection
+
 -   Extraction of keywords
 
 -   Annotation tool for classifying tweets according to different criteria

@@ -27,6 +27,7 @@ public class NNClassifier {
         scorer = new TfidfFilter(TfidfFilter.ScoringMode.TFIDF, new PorterStemmer(), MIN_TERMS_TFIDF, MIN_TERM_SIZE_TFIDF);
     }
 
+    public ScoredTweet getNearestRumor(Tweet tweet) {
         List<ClassifiedTweet> collection = tDao.getClassifiedTweets(false);
         List<ScoredTweet> scoredTweets = scorer.getScores(tweet, collection);
         scoredTweets.sort(new Comparator<ScoredTweet>() {

@@ -1,5 +1,5 @@
 Twitter Rumor Detector
-===============================
+======================
 
 Overview
 --------
@@ -50,7 +50,11 @@ Used tools
 
 -   [tfidf](https://github.com/wpm/tfidf)
 
--   [tweet-text] (https://github.com/twitter/twitter-text)
+-   [Scikit-learn](https://github.com/scikit-learn/scikit-learn)
+
+-   [Pandas](https://github.com/pandas-dev/pandas)
+
+-   [Tweet](https://github.com/twitter/twitter-text)-text
 
 ### Twitter connection
 

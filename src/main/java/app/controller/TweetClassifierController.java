@@ -1,9 +1,10 @@
 package app.controller;
 
 import app.ml.DecisionTreeClassifier;
-import app.ml.DummyClassifier;
+import app.ml.NNClassifier;
 import app.ml.RandomForestClassifier;
 import app.ml.TweetClassifier;
+import app.model.ScoredClassifiedTweet;
 import app.model.Tweet;
 import app.twitter.TwitterHandler;
 import app.util.spark.Path;
@@ -37,12 +38,15 @@ public class TweetClassifierController {
         Tweet tweet = th.parseURL(url);
         if(tweet != null) {
             model.put("tweet", tweet.getStatus());
-            TweetClassifier dummy = new DummyClassifier();
+            NNClassifier nn = new NNClassifier();
             TweetClassifier rf = new RandomForestClassifier();
             TweetClassifier dt = new DecisionTreeClassifier();
-            model.put("dummyScore",Math.round(dummy.getRumorScore(tweet) * 100));
-            model.put("rfScore",Math.round(rf.getRumorScore(tweet)));
-            model.put("dtScore",Math.round(dt.getRumorScore(tweet)));
+            ScoredClassifiedTweet scoredTweet = nn.getNearestTweet(tweet);
+            model.put("rfPred",rf.isRumor(tweet));
+            model.put("dtPred",dt.isRumor(tweet));
+            model.put("nnTweet", scoredTweet.getStatus());
+            model.put("nnSimilarity",Math.round(scoredTweet.getScore()*100));
+            model.put("nnPred",scoredTweet.getScore());
         }
         return ViewUtil.render(request, model, Path.Template.CLASSIFIER_POST);
     };

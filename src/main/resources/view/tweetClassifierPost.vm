@@ -10,30 +10,19 @@
         </blockquote>
     </div>
     #end
-    #if($!rfScore >= 0)
-        #if ($rfScore == 1)
-            #set( $rumor = true )
-        #else
-            #set( $rumor = false )
-        #end
-        <h2>Random Forest Classifier</h2>
-        #if ($rumor) <p id="result" class="true"> The tweet is a rumor
-        #else <p id="result" class="false"> The tweet is not a rumor
-        #end
-        </p>
+
+    <h2>Random Forest Classifier</h2>
+    #if ($!rfPred) <p id="result" class="true"> The tweet is a rumor
+    #else <p id="result" class="false"> The tweet is not a rumor
     #end
-    #if($!dtScore >= 0)
-        #if ($dtScore == 1)
-            #set( $rumor = true )
-        #else
-            #set( $rumor = false )
-        #end
+    </p>
+
     <h2>Decision Tree Classifier</h2>
-        #if ($rumor) <p id="result" class="true"> The tweet is a rumor
+        #if ($!dtPred) <p id="result" class="true"> The tweet is a rumor
         #else <p id="result" class="false"> The tweet is not a rumor
         #end
     </p>
-    #end
+
     #if ($!nnTweet)
         <h2>NN Classifier</h2>
         <h3>$msg.get("TWEET_CLASSIFIER_NN_TWEET")</h3>
@@ -44,18 +33,20 @@
                     <span class="creationDate">$nnTweet.getCreatedAt()</span>
                 </blockquote>
             </div>
-    #elseif($dummyScore >= 0)
-    <h2>Dummy classifier</h2>
-    <div id="radial-score" class="center">
-        <svg class="progress red noselect" data-progress=$dummyScore x="0px" y="0px" viewBox="0 0 80 80">
-            <path class="track" d="M5,40a35,35 0 1,0 70,0a35,35 0 1,0 -70,0" />
-            <path class="fill" d="M5,40a35,35 0 1,0 70,0a35,35 0 1,0 -70,0" />
-            <text class="value" x="50%" y="55%">$dummyScore%</text>
-            <text class="text" x="50%" y="0%">Rumor</text>
-        </svg>
-    </div>
+        <div id="radial-score" class="center">
+            <svg class="progress red noselect" data-progress=$!nnSimilarity x="0px" y="0px" viewBox="0 0 80 80">
+                <path class="track" d="M5,40a35,35 0 1,0 70,0a35,35 0 1,0 -70,0" />
+                <path class="fill" d="M5,40a35,35 0 1,0 70,0a35,35 0 1,0 -70,0" />
+                <text class="value" x="50%" y="55%">$!nnSimilarity%</text>
+                <text class="text" x="50%" y="0%">Similarity</text>
+            </svg>
+        </div>
+        #if ($!nnPred) <p id="result" class="true"> The tweet is a rumor
+        #else <p id="result" class="false"> The tweet is not a rumor
+        #end
+        </p>
     #else
-    <h2>$msg.get("TWEET_CLASSIFIER_NORESULT")</h2>
+    <h2>$msg.get("TWEET_CLASSIFIER_NN_NORESULT")</h2>
     #end
 <div id="index-button-bar">
     <p><a id="benchmarksLink" href="/tweet-classifier" >Try another</a></p>

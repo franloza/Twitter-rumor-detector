@@ -65,8 +65,8 @@ public class TwitterHandler {
 
         //Export tweets to CSV for Classifier
         //classifiedToCSV("src/main/python/ml/",false);
-        //classifiedToCSV("src/main/resources/data/docs/ml/",true);
-        //classifiedToCSV("src/main/resources/data/docs/ml/",false);
+        //classifiedToCSV("src/main/resources/data/docs/",true);
+        //classifiedToCSV("src/main/resources/data/docs/",false);
 
         //Extract keywords
         extractKeywords();

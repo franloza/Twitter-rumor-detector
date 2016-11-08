@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * Created by User on 08/11/2016.
  */
-public class NNClassifier {
+public class NNClassifier implements TweetClassifier{
 
     public static final int MIN_TERMS_TFIDF = 5;
     public static final int MIN_TERM_SIZE_TFIDF = 2;
@@ -42,5 +42,12 @@ public class NNClassifier {
                     ,classified.isAssertion(),classified.isTopic(),classified.isRumor());
         }
         return null;
+    }
+
+    @Override
+    public boolean isRumor(Tweet tweet) {
+        ScoredClassifiedTweet classifiedTweet = getNearestTweet(tweet);
+        if(classifiedTweet != null) return classifiedTweet.isRumor();
+        else return false;
     }
 }

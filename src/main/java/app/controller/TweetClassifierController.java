@@ -46,7 +46,7 @@ public class TweetClassifierController {
             model.put("dtPred",dt.isRumor(tweet));
             model.put("nnTweet", scoredTweet.getStatus());
             model.put("nnSimilarity",Math.round(scoredTweet.getScore()*100));
-            model.put("nnPred",scoredTweet.getScore());
+            model.put("nnPred",scoredTweet.isRumor());
         }
         return ViewUtil.render(request, model, Path.Template.CLASSIFIER_POST);
     };

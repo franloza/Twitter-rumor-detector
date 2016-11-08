@@ -3,6 +3,7 @@ package app.ml;
 import app.db.DataManager;
 import app.db.TweetDAO;
 import app.model.ClassifiedTweet;
+import app.model.ScoredClassifiedTweet;
 import app.model.ScoredTweet;
 import app.model.Tweet;
 import crawler.filter.PorterStemmer;
@@ -27,7 +28,7 @@ public class NNClassifier {
         scorer = new TfidfFilter(TfidfFilter.ScoringMode.TFIDF, new PorterStemmer(), MIN_TERMS_TFIDF, MIN_TERM_SIZE_TFIDF);
     }
 
-    public ScoredTweet getNearestRumor(Tweet tweet) {
+    public ScoredClassifiedTweet getNearestTweet(Tweet tweet) {
         List<ClassifiedTweet> collection = tDao.getClassifiedTweets(false);
         List<ScoredTweet> scoredTweets = scorer.getScores(tweet, collection);
         scoredTweets.sort(new Comparator<ScoredTweet>() {
@@ -36,8 +37,9 @@ public class NNClassifier {
             }
         });
         for(ScoredTweet current : scoredTweets) {
-            if(((ClassifiedTweet)(current.tweet)).isRumor())
-                return current;
+            ClassifiedTweet classified = ((ClassifiedTweet)(current.tweet));
+            return new ScoredClassifiedTweet(classified.getStatus(),current.score
+                    ,classified.isAssertion(),classified.isTopic(),classified.isRumor());
         }
         return null;
     }

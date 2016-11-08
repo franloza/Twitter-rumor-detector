@@ -29,8 +29,8 @@ public class TfidfFilter {
         this.minTermSize = minTermSize;
     }
 
-    public List<ScoredTweet> getScores(Tweet query, List<Tweet> documents) {
-        List<String> queryTerms = new ArrayList<>();
+    public List<ScoredTweet> getScores(Tweet query, List<? extends Tweet> documents) {
+        List<String> queryTerms;
         List<List<String>> documentTerms = new ArrayList<List<String>>();
 
         Map<String,Double> queryTF;
